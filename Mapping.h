@@ -35,11 +35,12 @@
 *                     
 *   Xiaochen Peng   Email: xpeng15 at asu dot edu
 ********************************************************************************/
+#include <string>
 
 #ifndef MAPPING_H_
 #define MAPPING_H_
 
-void WeightInitialize();
+void WeightInitialize(std::string mat_name);
 void WeightToConductance();
 int CurrentToDigits(double I, double Imax);
 double DigitsToAlgorithm(int outputDigits, double pSumMaxAlgorithm);

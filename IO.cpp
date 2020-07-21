@@ -48,7 +48,7 @@
 
 extern Param *param;
 extern Array *arrayIH;
-extern Array *arrayHO;
+//extern Array *arrayHO;
 extern std::vector< std::vector<double> > Input;
 extern std::vector< std::vector<int> > dInput;
 extern std::vector< std::vector<double> > testInput;

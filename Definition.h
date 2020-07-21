@@ -109,14 +109,14 @@ int correct = 0;
 /* Synaptic array between input and hidden layer */
 Array *arrayIH = new Array(param->nHide, param->nInput, param->arrayWireWidth);
 /* Synaptic array between hidden and output layer */
-Array *arrayHO = new Array(param->nOutput, param->nHide, param->arrayWireWidth);
+//Array *arrayHO = new Array(param->nOutput, param->nHide, param->arrayWireWidth);
 
 /* Random number generator engine */
 std::mt19937 gen;
 
 /* NeuroSim */
 SubArray *subArrayIH;   // NeuroSim synaptic core for arrayIH
-SubArray *subArrayHO;   // NeuroSim synaptic core for arrayHO
+//SubArray *subArrayHO;   // NeuroSim synaptic core for arrayHO
 /* Global properties of subArrayIH */
 InputParameter inputParameterIH;
 Technology techIH;

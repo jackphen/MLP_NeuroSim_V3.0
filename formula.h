@@ -52,5 +52,7 @@ double InvMeasuredLTP(double conductance, int maxNumLevel, std::vector<double>& 
 double InvMeasuredLTD(double conductance, int maxNumLevel, std::vector<double>& dataConductanceLTD);
 double getParamA(double NL);
 double NonlinearConductance(double C, double NL, double Vw, double Vr, double V);
-
+std::vector<std::string> explode(std::string const & s, char delim);
+double quantize(double x, int b);
+int integerize(double x, int b);
 #endif

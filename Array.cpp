@@ -178,6 +178,8 @@ void Array::WriteCell(int x, int y, double deltaWeight, double weight, double ma
         if (regular) 
         {	// Regular write
 			static_cast<AnalogNVM*>(cell[x][y])->Write(deltaWeight, weight, minWeight, maxWeight);
+
+			//printf("\t\tCell (%d,%d), regular write, written conductance: %.3e\n",x,y,static_cast<AnalogNVM*>(cell[x][y])->conductance); 
 		} 
         else 
         {	// Preparation stage (ideal write)
@@ -196,6 +198,7 @@ void Array::WriteCell(int x, int y, double deltaWeight, double weight, double ma
 				conductance = minConductance;
 			}
 			static_cast<eNVM*>(cell[x][y])->conductance = conductance;
+			//printf("\t\tCell (%d,%d), non-regular write, written conductance: %.3e\n",x,y,conductance); 
 		}
 	}
     else    // SRAM or digital eNVM

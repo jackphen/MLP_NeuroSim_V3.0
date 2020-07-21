@@ -58,92 +58,85 @@
 using namespace std;
 
 int main() {
+
+	printf("Started.\n"); 
+
 	gen.seed(0);
+
+	/* *********************************************************+
+	 * 						ARRAY SIZING
+	 * **********************************************************/
+
+	int array_type; 
+	cout << "Choose array type [1 1T1R, 2 SRAM]: "; cin >> array_type;
+
+	cout << "# of rows: "; 	cin >> arrayIH->arrayRowSize; param->problemSizeRows = arrayIH->arrayRowSize; 
+	cout << "# of cols: ";	cin >> arrayIH->arrayColSize; param->problemSizeCols = arrayIH->arrayColSize; 
+
+	if (array_type == 2) {cout << "SRAM precision [bits]: "; cin >> param->numWeightBit; };
+
+	switch(array_type) {
+		case 1: arrayIH->Initialization<RealDevice>(); printf("1T1R %dx%d array initialized.\n\n",arrayIH->arrayRowSize,arrayIH->arrayColSize); break; 
+		case 2: arrayIH->Initialization<SRAM>(param->numWeightBit); printf("SRAM %dx%d array initialized.\n\n",arrayIH->arrayRowSize,arrayIH->arrayColSize); break; 
+	};
 	
-	/* Load in MNIST data */
-	ReadTrainingDataFromFile("patch60000_train.txt", "label60000_train.txt");
-	ReadTestingDataFromFile("patch10000_test.txt", "label10000_test.txt");
-
-	/* Initialization of synaptic array from input to hidden layer */
-	//arrayIH->Initialization<IdealDevice>();
-	arrayIH->Initialization<RealDevice>();
-	//arrayIH->Initialization<MeasuredDevice>();
-	//arrayIH->Initialization<SRAM>(param->numWeightBit);
-	//arrayIH->Initialization<DigitalNVM>(param->numWeightBit,true); // true: consider refColumn
-
-	
-	/* Initialization of synaptic array from hidden to output layer */
-	//arrayHO->Initialization<IdealDevice>();
-	arrayHO->Initialization<RealDevice>();
-	//arrayHO->Initialization<MeasuredDevice>();
-	//arrayHO->Initialization<SRAM>(param->numWeightBit);
-	//arrayHO->Initialization<DigitalNVM>(param->numWeightBit,true);
-
+	/* *********************************************************+
+	 * 						LEAKAGE BENCHMARK
+	 * **********************************************************/
 
 	/* Initialization of NeuroSim synaptic cores */
 	param->relaxArrayCellWidth = 0;
 	NeuroSimSubArrayInitialize(subArrayIH, arrayIH, inputParameterIH, techIH, cellIH);
-	param->relaxArrayCellWidth = 1;
-	NeuroSimSubArrayInitialize(subArrayHO, arrayHO, inputParameterHO, techHO, cellHO);
+
 	/* Calculate synaptic core area */
 	NeuroSimSubArrayArea(subArrayIH);
-	NeuroSimSubArrayArea(subArrayHO);
-	
+
 	/* Calculate synaptic core standby leakage power */
 	NeuroSimSubArrayLeakagePower(subArrayIH);
-	NeuroSimSubArrayLeakagePower(subArrayHO);
 	
 	/* Initialize the neuron peripheries */
 	NeuroSimNeuronInitialize(subArrayIH, inputParameterIH, techIH, cellIH, adderIH, muxIH, muxDecoderIH, dffIH, subtractorIH);
-	NeuroSimNeuronInitialize(subArrayHO, inputParameterHO, techHO, cellHO, adderHO, muxHO, muxDecoderHO, dffHO, subtractorHO);
+	
 	/* Calculate the area and standby leakage power of neuron peripheries below subArrayIH */
 	double heightNeuronIH, widthNeuronIH;
 	NeuroSimNeuronArea(subArrayIH, adderIH, muxIH, muxDecoderIH, dffIH, subtractorIH, &heightNeuronIH, &widthNeuronIH);
 	double leakageNeuronIH = NeuroSimNeuronLeakagePower(subArrayIH, adderIH, muxIH, muxDecoderIH, dffIH, subtractorIH);
-	/* Calculate the area and standby leakage power of neuron peripheries below subArrayHO */
-	double heightNeuronHO, widthNeuronHO;
-	NeuroSimNeuronArea(subArrayHO, adderHO, muxHO, muxDecoderHO, dffHO, subtractorHO, &heightNeuronHO, &widthNeuronHO);
-	double leakageNeuronHO = NeuroSimNeuronLeakagePower(subArrayHO, adderHO, muxHO, muxDecoderHO, dffHO, subtractorHO);
 	
 	/* Print the area of synaptic core and neuron peripheries */
-	double totalSubArrayArea = subArrayIH->usedArea + subArrayHO->usedArea;
 	double totalNeuronAreaIH = adderIH.area + muxIH.area + muxDecoderIH.area + dffIH.area + subtractorIH.area;
-	double totalNeuronAreaHO = adderHO.area + muxHO.area + muxDecoderHO.area + dffHO.area + subtractorHO.area;
-	printf("Total SubArray (synaptic core) area=%.4e m^2\n", totalSubArrayArea);
-	printf("Total Neuron (neuron peripheries) area=%.4e m^2\n", totalNeuronAreaIH + totalNeuronAreaHO);
-	printf("Total area=%.4e m^2\n", totalSubArrayArea + totalNeuronAreaIH + totalNeuronAreaHO);
 
-	/* Print the standby leakage power of synaptic core and neuron peripheries */
-	printf("Leakage power of subArrayIH is : %.4e W\n", subArrayIH->leakage);
-	printf("Leakage power of subArrayHO is : %.4e W\n", subArrayHO->leakage);
-	printf("Leakage power of NeuronIH is : %.4e W\n", leakageNeuronIH);
-	printf("Leakage power of NeuronHO is : %.4e W\n", leakageNeuronHO);
-	printf("Total leakage power of subArray is : %.4e W\n", subArrayIH->leakage + subArrayHO->leakage);
-	printf("Total leakage power of Neuron is : %.4e W\n", leakageNeuronIH + leakageNeuronHO);
-	
+	/* *********************************************************+
+	 * 						ARRAY PROGRAMMING 
+	 * **********************************************************/
+
+	printf("\nStarted array programming phase.\n"); std::string matrix_name; 
+	cout << "Insert input file: "; 	cin >> matrix_name;
+	cout << "Select ideal or real cell write [1 real, 0 ideal]: "; 	cin >> param->arrayWriteType; 
+
+
 	/* Initialize weights and map weights to conductances for hardware implementation */
-	WeightInitialize();
-	if (param->useHardwareInTraining) { WeightToConductance(); }
+	WeightInitialize(matrix_name);	WeightToConductance();
 
-	srand(0);	// Pseudorandom number seed
-	
-	ofstream mywriteoutfile;
-	mywriteoutfile.open("my_log.csv");                                                                                                            
-	
-	for (int i=1; i<=param->totalNumEpochs/param->interNumEpochs; i++) {
-        //cout << "Training Epoch : " << i << endl;
-		Train(param->numTrainImagesPerEpoch, param->interNumEpochs,param->optimization_type);
-		if (!param->useHardwareInTraining && param->useHardwareInTestingFF) { WeightToConductance(); }
-		Validate();
-		mywriteoutfile << i*param->interNumEpochs << ", " << (double)correct/param->numMnistTestImages*100 << endl;
-		
-		printf("Accuracy at %d epochs is : %.2f%\n", i*param->interNumEpochs, (double)correct/param->numMnistTestImages*100);
-		printf("\tRead latency=%.4e s\n", subArrayIH->readLatency + subArrayHO->readLatency);
-		printf("\tWrite latency=%.4e s\n", subArrayIH->writeLatency + subArrayHO->writeLatency);
-		printf("\tRead energy=%.4e J\n", arrayIH->readEnergy + subArrayIH->readDynamicEnergy + arrayHO->readEnergy + subArrayHO->readDynamicEnergy);
-		printf("\tWrite energy=%.4e J\n", arrayIH->writeEnergy + subArrayIH->writeDynamicEnergy + arrayHO->writeEnergy + subArrayHO->writeDynamicEnergy);
-	}
-	printf("\n");
+	/* *********************************************************+
+	 * 				EIGENVECTOR ALGORITHM BENCHMARK 
+	 * **********************************************************/	 
+	Validate();
+
+
+	/* *********************************************************+
+	 * 				       BENCHMARK RESULTS 
+	 * **********************************************************/	 
+	printf("\nArea, memory array:\t\t\t %.4e mm^2\n", (subArrayIH->usedArea)*1e6);
+	printf("Area, peripherals:\t\t\t %.4e mm^2\n", (totalNeuronAreaIH)*1e6);
+	printf("Area, total:\t\t\t\t %.4e mm^2\n", (subArrayIH->usedArea + totalNeuronAreaIH)*1e6 );
+
+	printf("\nArea performance:\t\t\t %.4e TOPS/mm^2\n",pow(param->problemSizeCols,2)/((subArrayIH->usedArea + totalNeuronAreaIH)*1e6)/1e12);	
+
+	printf("\nLeakage power, memory array:\t\t %.4e W\n", subArrayIH->leakage);
+	printf("Leakage power, peripherals:\t\t %.4e W\n", leakageNeuronIH);
+	printf("Leakage power, total:\t\t\t %.4e W\n", subArrayIH->leakage + leakageNeuronIH);
+	printf("-----------------------------------------------------------------\n");
+
 	return 0;
 }
 

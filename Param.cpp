@@ -45,29 +45,35 @@ Param::Param() {
 	numMnistTrainImages = 60000;// # of training images in MNIST
 	numMnistTestImages = 10000;	// # of testing images in MNIST
 	
-	/* Algorithm parameters */
+	/* MNIST Algorithm parameters */
 	numTrainImagesPerEpoch = 8000;	// # of training images per epoch
 	totalNumEpochs = 125;	// Total number of epochs
 	interNumEpochs = 1;		// Internal number of epochs (print out the results every interNumEpochs)
-	nInput = 400;     // # of neurons in input layer
-	nHide = 100;      // # of neurons in hidden layer
-	nOutput = 10;     // # of neurons in output layer
+	nInput = 64;    // # of neurons in input layer
+	nHide = 64;     // # of neurons in hidden layer
+	nOutput = 64;   // # of neurons in output layer
 	alpha1 = 0.4;	// Learning rate for the weights from input to hidden layer
 	alpha2 = 0.2;	// Learning rate for the weights from hidden to output layer
 	maxWeight = 1;	// Upper bound of weight value
-	minWeight = -1;	// Lower bound of weight value
-    /*Optimization method 
-    Available option include: "SGD", "Momentum", "Adagrad", "RMSprop" and "Adam"*/
+	minWeight = 0;	// Lower bound of weight value
+    /* Optimization method 
+    Available option include: "SGD", "Momentum", "Adagrad", "RMSprop" and "Adam" */
     optimization_type = "SGD";
 
+	/* InvPowerIt Algorithm parameters */
+	numCycles = 6; 
+	problemSizeRows = 64;
+	problemSizeCols = 64;
+	IPIThreshold = 5e-8; 
 
 	/* Hardware parameters */
+	arrayWriteType = true; 			  // Ideal or real write for matrix weights (true: real, false: ideal); 	
 	useHardwareInTrainingFF = true;   // Use hardware in the feed forward part of training or not (true: realistic hardware, false: ideal software)
 	useHardwareInTrainingWU = true;   // Use hardware in the weight update part of training or not (true: realistic hardware, false: ideal software)
 	useHardwareInTraining = useHardwareInTrainingFF || useHardwareInTrainingWU;    // Use hardware in the training or not
 	useHardwareInTestingFF = true;    // Use hardware in the feed forward part of testing or not (true: realistic hardware, false: ideal software)
-	numBitInput = 1;       // # of bits of the input data (=1 for black and white data)
-	numBitPartialSum = 8;  // # of bits of the digital output (partial weighted sum output)
+	numBitInput = 2;       // # of bits of the input data (=1 for black and white data)
+	numBitPartialSum = 10;  // # of bits of the digital output (partial weighted sum output)
 	pSumMaxHardware = pow(2, numBitPartialSum) - 1;   // Max digital output value of partial weighted sum
 	numInputLevel = pow(2, numBitInput);  // # of levels of the input data
 	numWeightBit = 6;	// # of weight bits (only for pure algorithm, SRAM and digital RRAM hardware)
@@ -79,9 +85,8 @@ Param::Param() {
 	NeuroSimDynamicPerformance = true; // Report the dynamic performance (latency and energy) in NeuroSim or not
 	relaxArrayCellHeight = 0;	// True: relax the array cell height to standard logic cell height in the synaptic array
 	relaxArrayCellWidth = 0;	// True: relax the array cell width to standard logic cell width in the synaptic array
-	arrayWireWidth = 100;	// Array wire width (nm)
+	arrayWireWidth = 32;	// Array wire width (nm)
 	processNode = 32;	// Technology node (nm)
 	clkFreq = 2e9;		// Clock frequency (Hz)
- 
 }
 

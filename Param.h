@@ -62,7 +62,14 @@ public:
 	double minWeight;	// Lower bound of weight value
     char* optimization_type;
 
+	/* InvPowerIt Algorithm parameters */
+	int numCycles;  		// # of network cycles
+	int problemSizeRows; 		// size of matrix N
+	int problemSizeCols;
+	double IPIThreshold; 
+
 	/* Hardware parameters */
+	bool arrayWriteType; 			// Ideal or real write for matrix weights (true: real, false: ideal); 
 	bool useHardwareInTrainingFF;   // Use hardware in the feed forward part of training or not (true: realistic hardware, false: ideal software)
 	bool useHardwareInTrainingWU;   // Use hardware in the weight update part of training or not (true: realistic hardware, false: ideal software)
 	bool useHardwareInTraining;		// Use hardware in the training or not

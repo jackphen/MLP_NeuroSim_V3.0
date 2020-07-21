@@ -38,6 +38,9 @@
 
 #include <cmath>
 #include <vector>
+#include <vector>
+#include <sstream>
+#include <utility>
 
 /* Activation function */
 double sigmoid(double x) {
@@ -322,3 +325,28 @@ double NonlinearConductance(double C, double NL, double Vw, double Vr, double V)
 	return C_NL;
 }
 
+/* String exploder - to load matrices from file */
+std::vector<std::string> explode(std::string const & s, char delim)
+{
+    std::vector<std::string> result;
+    std::istringstream iss(s);
+
+    for (std::string token; std::getline(iss, token, delim); )
+    {
+        result.push_back(std::move(token));
+    }
+
+    return result;
+}
+
+double quantize(double x,int b)
+{
+	double l = 1/(pow(2,b) - 1);
+	return floor(x/l)*l;
+}
+
+int integerize(double x,int b)
+{
+	double l = 1/(pow(2,b) - 1); 
+	return floor(x/l); 
+}

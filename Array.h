@@ -81,19 +81,29 @@ public:
 		/* Determine number of cells per synapse (SRAM and DigitalNVM) */
 		this->numCellPerSynapse = numCellPerSynapse;
 
+		printf("\t Determined number of cells per synapse.\n");
+
 		/* Initialize memory cells */
         int cellsPerRow; // the number of columns 
         if(refColumn == true) 
             cellsPerRow = arrayColSize*numCellPerSynapse+2;
         else
             cellsPerRow = arrayColSize*numCellPerSynapse;
-        cell = new Cell**[cellsPerRow];
+
+		printf("\t Number of cells per synapse: %d\n",numCellPerSynapse); 
+		printf("\t Array column size: %d\n",arrayColSize); 
+		printf("\t Number of cells per row: %d\n",cellsPerRow); 
+		
+		cell = new Cell**[cellsPerRow];
 		for (int col=0; col<cellsPerRow; col++) {
 			cell[col] = new Cell*[arrayRowSize];
 			for (int row=0; row<arrayRowSize; row++) {
 				cell[col][row] = new memoryType(col, row);
 			}
 		}
+
+		printf("\t Initialized memory cells. \n");
+
         // initialize the conductance of the reference column
         if(refColumn == true)
         {
@@ -107,13 +117,15 @@ public:
                 }
             }    
         }
+
+		printf("\t Initialized reference column. \n");
 		
 		/* Initialize interconnect wires */
 		double AR;	// Aspect ratio of wire height to wire width
 		double Rho;	// Resistivity
 		switch(wireWidth) {// wireWidth is defined in the param.cpp
-      case 800: AR = 2.10; Rho= 2.42e-8; break;
-			case 200: AR = 2.10; Rho = 2.42e-8; break;
+      		case 800: 	AR = 2.10; Rho = 2.42e-8; break;
+			case 200: 	AR = 2.10; Rho = 2.42e-8; break;
 			case 100:	AR = 2.30; Rho = 2.73e-8; break;
 			case 50:	AR = 2.34; Rho = 3.91e-8; break;
 			case 40:	AR = 1.90; Rho = 4.03e-8; break;
@@ -121,7 +133,7 @@ public:
 			case 22:	AR = 2.00; Rho = 5.41e-8; break;
 			case 14:	AR = 2.10; Rho = 7.43e-8; break;
 			case -1:	break;	// Ignore wire resistance or user define
-			default:	exit(-1); puts("Wire width out of range"); 
+			default:	printf("ERROR: Wire width out of range.\n"); exit(-1);
 		}
 		double wireLength = wireWidth * 1e-9 * 2;	// 2F
 		if (wireWidth == -1) {
@@ -137,6 +149,8 @@ public:
 		wireCapCol = wireLength * 0.2e-15/1e-6;
 		wireGateCapRow = wireLength * 0.2e-15/1e-6;
 		
+		printf("\t Initialized interconnect wires.\n");
+
 	}
 
 	double ReadCell(int x, int y,char*mode=NULL);	// x (column) and y (row) start from index 0
