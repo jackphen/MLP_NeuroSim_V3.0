@@ -49,93 +49,228 @@
 #include "formula.h"
 #include "NeuroSim.h"
 #include "Param.h"
-#include "IO.h"
-#include "Train.h"
 #include "Test.h"
 #include "Mapping.h"
 #include "Definition.h"
+#include "Debug.h"
 
 using namespace std;
 
+char benchmark[200];
+int array_type; 
+
 int main() {
 
-	printf("Started.\n"); 
+	TRACE("Started.\n"); 
+	sprintf(benchmark,"benchmark = ["); 
 
 	gen.seed(0);
 
 	/* *********************************************************+
-	 * 						ARRAY SIZING
+	 * 					SETUP INITIALIZATION
 	 * **********************************************************/
 
-	int array_type; 
-	cout << "Choose array type [1 1T1R, 2 SRAM]: "; cin >> array_type;
-
-	cout << "# of rows: "; 	cin >> arrayIH->arrayRowSize; param->problemSizeRows = arrayIH->arrayRowSize; 
-	cout << "# of cols: ";	cin >> arrayIH->arrayColSize; param->problemSizeCols = arrayIH->arrayColSize; 
-
+	/* Array type */
+	cout << "Array type [1 1T1R HP, 2 SRAM, 3 1T1R Fairy]: "; cin >> array_type;
 	if (array_type == 2) {cout << "SRAM precision [bits]: "; cin >> param->numWeightBit; };
 
-	switch(array_type) {
-		case 1: arrayIH->Initialization<RealDevice>(); printf("1T1R %dx%d array initialized.\n\n",arrayIH->arrayRowSize,arrayIH->arrayColSize); break; 
-		case 2: arrayIH->Initialization<SRAM>(param->numWeightBit); printf("SRAM %dx%d array initialized.\n\n",arrayIH->arrayRowSize,arrayIH->arrayColSize); break; 
-	};
-	
+	/* Problem size */
+	cout << "Problem size: "; 
+	param->problemSize = 32;
+	//cin >> param->problemSize;
+
+	/* Redundancy */
+	cout << "Redundancy level: "; 
+	if ((array_type == 1) | (array_type == 3)) param->redundancyLevel = 4; else if (array_type == 2) param->redundancyLevel = 1;
+	//cin >> param->redundancyLevel; 
+
+	/* Array quantity */
+	cout << "Choose number of arrays: "; 
+	if ((array_type == 1) | (array_type == 3)) param->numArrays = 3; else if (array_type == 2) param->numArrays = 1;
+	//cin >> param->numArrays;
+
+	/* Initialize each memory array */
+	param->arraySize = (int) sqrt(param->redundancyLevel)*param->problemSize; 
+
+	for (int jj = 0; jj < param->numArrays; jj++) {
+		arrays.push_back(new Array(param->arraySize,param->arraySize, param->arrayWireWidth));
+		arrays[jj]->arrayRowSize = param->arraySize;
+		arrays[jj]->arrayColSize = param->arraySize; 
+
+		switch(array_type) {
+			case 1: arrays[jj]->Initialization<PoliMiDevice>(); TRACE("1T1R %dx%d array %d initialized.\n\n",arrays[jj]->arrayRowSize,arrays[jj]->arrayColSize,jj); break; 
+			case 2: arrays[jj]->Initialization<SRAM>(param->numWeightBit); TRACE("SRAM %dx%d array %d initialized.\n\n",arrays[jj]->arrayRowSize,arrays[jj]->arrayColSize,jj); break; 
+			case 3: arrays[jj]->Initialization<RealDevice>(); TRACE("1T1R %dx%d array %d initialized.\n\n",arrays[jj]->arrayRowSize,arrays[jj]->arrayColSize,jj); break; 
+		};
+	}
+
+
 	/* *********************************************************+
 	 * 						LEAKAGE BENCHMARK
 	 * **********************************************************/
 
-	/* Initialization of NeuroSim synaptic cores */
-	param->relaxArrayCellWidth = 0;
-	NeuroSimSubArrayInitialize(subArrayIH, arrayIH, inputParameterIH, techIH, cellIH);
+	/* This was fun. If the array is too small, the resulting width
+	 * is not enough to accomodate even one subtractor. This leads 
+	 * to a divide by zero inside NeuroSim calculateArea() method
+	 * for the Subtractor class, which then results in the overflow
+	 * of the associated double area attribute. 
+	 * 
+	 * This bug manifests as a negative benchmarked area for the 
+	 * array peripherals.
+	 * 
+	 * Since we (a) do not want to tinker with NeuroSim excessively,
+	 * and (b) consider this to be also a realistic issue, we chose
+	 * to relax the array cell width should the array size be too 
+	 * small to accomodate one subtractor, and not relax it if at 
+	 * least one subtractor can fit along the array. The magic size
+	 * of 34 was found by trial.
+	 * */
+	param->relaxArrayCellWidth = (param->arraySize < 34);
 
-	/* Calculate synaptic core area */
-	NeuroSimSubArrayArea(subArrayIH);
+	/* Perform initialization of each subArray */
+	std::vector<double> heightNeurons;
+	std::vector<double> widthNeurons;
+	std::vector<double> leakageNeurons;
+	std::vector<double> totalNeuronAreas;
+	
+	for (int jj = 0; jj < param->numArrays; jj++) {
 
-	/* Calculate synaptic core standby leakage power */
-	NeuroSimSubArrayLeakagePower(subArrayIH);
-	
-	/* Initialize the neuron peripheries */
-	NeuroSimNeuronInitialize(subArrayIH, inputParameterIH, techIH, cellIH, adderIH, muxIH, muxDecoderIH, dffIH, subtractorIH);
-	
-	/* Calculate the area and standby leakage power of neuron peripheries below subArrayIH */
-	double heightNeuronIH, widthNeuronIH;
-	NeuroSimNeuronArea(subArrayIH, adderIH, muxIH, muxDecoderIH, dffIH, subtractorIH, &heightNeuronIH, &widthNeuronIH);
-	double leakageNeuronIH = NeuroSimNeuronLeakagePower(subArrayIH, adderIH, muxIH, muxDecoderIH, dffIH, subtractorIH);
-	
-	/* Print the area of synaptic core and neuron peripheries */
-	double totalNeuronAreaIH = adderIH.area + muxIH.area + muxDecoderIH.area + dffIH.area + subtractorIH.area;
+		subArrays.push_back(new SubArray(inputParameterIH,techIH,cellIH)); 
+		adders.push_back(new Adder(inputParameterIH,techIH,cellIH));
+		muxs.push_back(new Mux(inputParameterIH,techIH,cellIH));
+		muxDecoders.push_back(new RowDecoder(inputParameterIH,techIH,cellIH));
+		dffs.push_back(new DFF(inputParameterIH,techIH,cellIH));
+		subtractors.push_back(new Subtractor(inputParameterIH,techIH,cellIH));
+
+		/* Initialization of NeuroSim synaptic cores */
+		NeuroSimSubArrayInitialize(subArrays[jj], arrays[jj], inputParameterIH, techIH, cellIH);
+		TRACE("\tInitialized synaptic core #%d.\n",jj);
+
+		/* Calculate synaptic core area */
+		NeuroSimSubArrayArea(subArrays[jj]);
+		TRACE("\tCalculated area of synaptic core #%d.\n",jj);
+
+		/* Calculate synaptic core standby leakage power */
+		NeuroSimSubArrayLeakagePower(subArrays[jj]);
+		TRACE("\tCalculated leakage of synaptic core #%d.\n",jj);
+		
+		/* Initialize the neuron peripheries */
+		NeuroSimNeuronInitialize(subArrays[jj], inputParameterIH, techIH, cellIH, *adders[jj], *muxs[jj], *muxDecoders[jj], *dffs[jj], *subtractors[jj]);
+		TRACE("\tInitialized peripherals of synaptic core #%d.\n",jj);
+
+		/* Calculate the area and standby leakage power of neuron peripheries below subArrayIH */
+		heightNeurons.push_back(0); widthNeurons.push_back(0); 
+		NeuroSimNeuronArea(subArrays[jj], *adders[jj], *muxs[jj], *muxDecoders[jj], *dffs[jj], *subtractors[jj], &heightNeurons[jj], &widthNeurons[jj]);
+		leakageNeurons.push_back(NeuroSimNeuronLeakagePower(subArrays[jj], *adders[jj], *muxs[jj], *muxDecoders[jj], *dffs[jj], *subtractors[jj]));
+		totalNeuronAreas.push_back((*subArrays[jj]).usedArea-(*subArrays[jj]).areaArray);
+
+		TRACE("Adder area: %.4e\n",(*adders[jj]).area);
+		TRACE("Mux area: %.4e\n",(*muxs[jj]).area);
+		TRACE("Mux decoder area: %.4e\n",(*muxDecoders[jj]).area);
+		TRACE("DFF area: %.4e\n",(*dffs[jj]).area);
+		TRACE("Subtractor area: %.4e\n",(*subtractors[jj]).area);
+
+		TRACE("\tCalculated area of perihperals of synaptic core #%d.\n",jj);
+		TRACE("\tCalculated leakage of peripherals of synaptic core #%d.\n",jj);
+
+		TRACE("Synaptic Core #%d initialized.\n\n",jj);
+	}
+
+	printf("\nInitialized all arrays.\n"); 
+
 
 	/* *********************************************************+
 	 * 						ARRAY PROGRAMMING 
 	 * **********************************************************/
 
 	printf("\nStarted array programming phase.\n"); std::string matrix_name; 
-	cout << "Insert input file: "; 	cin >> matrix_name;
-	cout << "Select ideal or real cell write [1 real, 0 ideal]: "; 	cin >> param->arrayWriteType; 
 
+	// /* Initialize weights and map weights to conductances for hardware implementation */
+	std::vector<double> gain(param->numArrays);
 
-	/* Initialize weights and map weights to conductances for hardware implementation */
-	WeightInitialize(matrix_name);	WeightToConductance();
+	std::vector<std::string> default_mat_names = {"MSB_32.txt","LSB_p_32.txt","LSB_n_32.txt"};
+	if (array_type == 2) default_mat_names[0] = "target_32.txt"; 
+
+	std::vector<double> default_gains = {1,1/10.9732,-1/13.2351};
+
+	for(int jj = 0; jj < param->numArrays; jj++) {
+		printf("Array #%d, target matrix: ",jj); 	
+		matrix_name = default_mat_names[jj];
+		//cin >> matrix_name;
+		printf("Array #%d, gain: ",jj); 
+		gain[jj] = default_gains[jj];
+		//cin >> gain[jj];
+		TRACE("Selected gain: %.4f\n",gain[jj]);
+		cout << "Cell write type [1 real, 0 ideal]: "; 	
+		param->arrayWriteType = 0;
+		//cin >> param->arrayWriteType; 
+
+		WeightInitialize(matrix_name,arrays[jj]);  
+	}
 
 	/* *********************************************************+
 	 * 				EIGENVECTOR ALGORITHM BENCHMARK 
 	 * **********************************************************/	 
-	Validate();
+	PowerIt_Full(param->redundancyLevel,gain);
 
 
 	/* *********************************************************+
 	 * 				       BENCHMARK RESULTS 
 	 * **********************************************************/	 
-	printf("\nArea, memory array:\t\t\t %.4e mm^2\n", (subArrayIH->usedArea)*1e6);
-	printf("Area, peripherals:\t\t\t %.4e mm^2\n", (totalNeuronAreaIH)*1e6);
-	printf("Area, total:\t\t\t\t %.4e mm^2\n", (subArrayIH->usedArea + totalNeuronAreaIH)*1e6 );
-
-	printf("\nArea performance:\t\t\t %.4e TOPS/mm^2\n",pow(param->problemSizeCols,2)/((subArrayIH->usedArea + totalNeuronAreaIH)*1e6)/1e12);	
-
-	printf("\nLeakage power, memory array:\t\t %.4e W\n", subArrayIH->leakage);
-	printf("Leakage power, peripherals:\t\t %.4e W\n", leakageNeuronIH);
-	printf("Leakage power, total:\t\t\t %.4e W\n", subArrayIH->leakage + leakageNeuronIH);
 	printf("-----------------------------------------------------------------\n");
+	printf("                           SYSTEM REPORT                         \n");
+	printf("-----------------------------------------------------------------\n");
+
+	double totalNeuronArea = 0; 
+	double totalMemoryArea = 0; 
+	double totalNeuronLeakage = 0; 
+	double totalMemoryLeakage = 0; 
+	for(int jj = 0; jj < param->numArrays; jj++) {
+		TRACE("-----------------------------------------------------------------\n");
+		TRACE("                           ARRAY #%d                             \n",jj);
+		TRACE("-----------------------------------------------------------------\n");
+		TRACE("\nArea, memory array:\t\t\t %.4e mm^2\n", (subArrays[jj]->areaArray));
+		TRACE("Area, peripherals:\t\t\t %.4e mm^2\n", (totalNeuronAreas[jj])*1e6);
+		TRACE("Area, total:\t\t\t\t %.4e mm^2\n", (subArrays[jj]->areaArray + totalNeuronAreas[jj])*1e6 );
+
+		TRACE("\nLeakage power, memory array:\t\t %.4e W\n", subArrays[jj]->leakage);
+		TRACE("Leakage power, peripherals:\t\t %.4e W\n", leakageNeurons[jj]);
+		TRACE("Leakage power, total:\t\t\t %.4e W\n", subArrays[jj]->leakage + leakageNeurons[jj]);
+		TRACE("-----------------------------------------------------------------\n");
+
+		totalNeuronArea += totalNeuronAreas[jj];
+		totalMemoryArea += subArrays[jj]->areaArray;
+		totalNeuronLeakage += leakageNeurons[jj];
+		totalMemoryLeakage += subArrays[jj]->leakage; 
+	}
+
+	TRACE("-----------------------------------------------------------------\n");
+	TRACE("                               TOTAL                             \n");
+	TRACE("-----------------------------------------------------------------\n");
+	printf("\nArea, memory arrays:\t\t\t %.4e mm^2\n", (totalMemoryArea)*1e6);
+	printf("Area, peripherals:\t\t\t %.4e mm^2\n", (totalNeuronArea)*1e6);
+	printf("Area, total:\t\t\t\t %.4e mm^2\n", (totalMemoryArea + totalNeuronArea)*1e6 );
+
+	printf("\nPerformance Density:\t\t\t %.4e TOPS/mm^2\n",pow(param->problemSize,2)/((totalMemoryArea + totalNeuronArea)*1e6)/1e12);	
+
+	printf("\nLeakage power, memory array:\t\t %.4e W\n", totalMemoryLeakage);
+	printf("Leakage power, peripherals:\t\t %.4e W\n", totalNeuronLeakage);
+	printf("Leakage power, total:\t\t\t %.4e W\n", totalMemoryLeakage + totalNeuronLeakage);
+	printf("-----------------------------------------------------------------\n");
+
+	sprintf(benchmark,"%s%.4e,",benchmark,totalMemoryArea); 
+	sprintf(benchmark,"%s%.4e,",benchmark,totalNeuronArea); 
+	sprintf(benchmark,"%s%.4e,",benchmark,totalMemoryArea+totalNeuronArea); 
+	sprintf(benchmark,"%s%.4e,",benchmark,totalMemoryLeakage); 
+	sprintf(benchmark,"%s%.4e,",benchmark,totalNeuronLeakage); 
+	sprintf(benchmark,"%s%.4e];\n",benchmark,totalMemoryLeakage+totalNeuronLeakage); 
+
+	printf("\n\n%s",benchmark);
+	TRACE("\nCompleted!\n");
+
+	// for (int jj = 0; jj < param->numArrays; jj++) {
+	// 	(*subArrays[jj]).PrintProperty(); 
+	// }
 
 	return 0;
 }

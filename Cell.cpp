@@ -256,6 +256,110 @@ void IdealDevice::Write(double deltaWeightNormalized, double weight, double minW
 	conductance = conductanceNew;
 }
 
+/* PoliMi device (no weight update nonlinearity) */
+PoliMiDevice::PoliMiDevice(int x, int y) {
+	this->x = x; this->y = y;	// Cell location: x (column) and y (row) start from index 0
+	maxConductance = 292.522e-6;		// Maximum cell conductance (S)
+	minConductance = 0;	    // Minimum cell conductance (S)
+	avgMaxConductance = maxConductance; // Average maximum cell conductance (S)
+	avgMinConductance = minConductance; // Average minimum cell conductance (S)
+	conductance = minConductance;	// Current conductance (S) (dynamic variable)
+	conductancePrev = conductance;	// Previous conductance (S) (dynamic variable)
+	readVoltage = 0.5;	// On-chip read voltage (Vr) (V)
+	readPulseWidth = 5e-9;	// Read pulse width (s) (will be determined by ADC)
+	writeVoltageLTP = 2;	// Write voltage (V) for LTP or weight increase
+	writeVoltageLTD = 2;	// Write voltage (V) for LTD or weight decrease
+	writePulseWidthLTP = 10e-9;	// Write pulse width (s) for LTP or weight increase
+	writePulseWidthLTD = 10e-9;	// Write pulse width (s) for LTD or weight decrease
+	writeEnergy = 0;	// Dynamic variable for calculation of write energy (J)
+	maxNumLevelLTP = 63;	// Maximum number of conductance states during LTP or weight increase
+	maxNumLevelLTD = 63;	// Maximum number of conductance states during LTD or weight decrease
+	numPulse = 0;	// Number of write pulses used in the most recent write operation (dynamic variable)
+	cmosAccess = true;	// True: Pseudo-crossbar (1T1R), false: cross-point
+	FeFET = false;		// True: FeFET structure (Pseudo-crossbar only, should be cmosAccess=1)
+	gateCapFeFET = 2.1717e-18;	// Gate capacitance of FeFET (F)
+	resistanceAccess = 15e3;	// The resistance of transistor (Ohm) in Pseudo-crossbar array when turned ON
+	nonlinearIV = false;	// Consider I-V nonlinearity or not (Currently for cross-point array only)
+	nonIdenticalPulse = false;	// Use non-identical pulse scheme in weight update or not (should be false here)
+								// Don't care other non-identical pulse parameters
+	NL = 10;	// Nonlinearity in write scheme (the current ratio between Vw and Vw/2), assuming for the LTP side
+	if (nonlinearIV) {	// Currently for cross-point array only
+		double Vr_exp = readVoltage;  // XXX: Modify this value to Vr in the reported measurement data (can be different than readVoltage)
+		// Calculation of conductance at on-chip Vr
+		maxConductance = NonlinearConductance(maxConductance, NL, writeVoltageLTP, Vr_exp, readVoltage);
+		minConductance = NonlinearConductance(minConductance, NL, writeVoltageLTP, Vr_exp, readVoltage);
+	}
+	readNoise = false;	// Consider read noise or not
+	sigmaReadNoise = 0.25;	// Sigma of read noise in gaussian distribution
+	gaussian_dist = new std::normal_distribution<double>(0, sigmaReadNoise);	// Set up mean and stddev for read noise
+	
+	/* Conductance range variation */	
+	conductanceRangeVar = false;	// Consider variation of conductance range or not
+	maxConductanceVar = 0;	// Sigma of maxConductance variation (S)
+	minConductanceVar = 0;	// Sigma of minConductance variation (S)
+	std::mt19937 localGen;
+	localGen.seed(std::time(0));
+	gaussian_dist_maxConductance = new std::normal_distribution<double>(0, maxConductanceVar);
+	gaussian_dist_minConductance = new std::normal_distribution<double>(0, minConductanceVar);
+	if (conductanceRangeVar) {
+		maxConductance += (*gaussian_dist_maxConductance)(localGen);
+		minConductance += (*gaussian_dist_minConductance)(localGen);
+		if (minConductance >= maxConductance || maxConductance < 0 || minConductance < 0 ) {	// Conductance variation check
+			puts("[Error] Conductance variation check not passed. The variation may be too large.");
+			exit(-1);
+		}
+		// Use the code below instead for re-choosing the variation if the check is not passed
+		//do {
+		//	maxConductance = avgMaxConductance + (*gaussian_dist_maxConductance)(localGen);
+		//	minConductance = avgMinConductance + (*gaussian_dist_minConductance)(localGen);
+		//} while (minConductance >= maxConductance || maxConductance < 0 || minConductance < 0);
+	}
+	
+	heightInFeatureSize = cmosAccess? 4 : 2;	// Cell height = 4F (Pseudo-crossbar) or 2F (cross-point)
+	widthInFeatureSize = cmosAccess? (FeFET? 6 : 4) : 2;	// Cell width = 6F (FeFET) or 4F (Pseudo-crossbar) or 2F (cross-point)
+}
+
+double PoliMiDevice::Read(double voltage) {
+	extern std::mt19937 gen;
+	// TODO: nonlinear read
+	if (readNoise) {
+		return voltage * conductance * (1 + (*gaussian_dist)(gen));
+	} else {
+		return voltage * conductance;
+	}
+}
+
+void PoliMiDevice::Write(double deltaWeightNormalized, double weight, double minWeight, double maxWeight) {
+	extern std::mt19937 gen;
+	if (deltaWeightNormalized >= 0) {
+		deltaWeightNormalized = deltaWeightNormalized/(maxWeight-minWeight);
+		deltaWeightNormalized = truncate(deltaWeightNormalized, maxNumLevelLTP);
+		numPulse = deltaWeightNormalized * maxNumLevelLTP;
+	} else {
+		deltaWeightNormalized = deltaWeightNormalized/(maxWeight-minWeight);
+		deltaWeightNormalized = truncate(deltaWeightNormalized, maxNumLevelLTD);
+		numPulse = deltaWeightNormalized * maxNumLevelLTD;	                          // will be a negative number
+	}
+	double conductanceNew = conductance + deltaWeightNormalized * (maxConductance - minConductance);
+	if (conductanceNew > maxConductance) {
+		conductanceNew = maxConductance;
+	} else if (conductanceNew < minConductance) {
+		conductanceNew = minConductance;
+	}
+
+	/* Write latency calculation */
+	if (numPulse > 0) {	// LTP
+		writeLatencyLTP = numPulse * writePulseWidthLTP;
+		writeLatencyLTD = 0;
+	} else {	// LTD
+		writeLatencyLTP = 0;
+		writeLatencyLTD = -numPulse * writePulseWidthLTD;
+	}
+	
+	conductancePrev = conductance;
+	conductance = conductanceNew;
+}
+
 /* Real Device */
 RealDevice::RealDevice(int x, int y) {
 	this->x = x; this->y = y;	// Cell location: x (column) and y (row) start from index 0

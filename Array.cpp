@@ -198,7 +198,8 @@ void Array::WriteCell(int x, int y, double deltaWeight, double weight, double ma
 				conductance = minConductance;
 			}
 			static_cast<eNVM*>(cell[x][y])->conductance = conductance;
-			//printf("\t\tCell (%d,%d), non-regular write, written conductance: %.3e\n",x,y,conductance); 
+			TRACE("\t\tCell (%d,%d), non-regular write, written conductance: %.3e from weight: %.3e\n",x,y,conductance,weight); 
+			TRACE("\t\tmaxConductance: %.4e, minConductance: %.4e\n",maxConductance,minConductance);
 		}
 	}
     else    // SRAM or digital eNVM

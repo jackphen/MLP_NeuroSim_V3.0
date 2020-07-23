@@ -41,6 +41,7 @@
 #include "constant.h"
 #include "formula.h"
 #include "SubArray.h"
+#include "../Debug.h"
 
 using namespace std;
 
@@ -134,7 +135,10 @@ void SubArray::Initialize(int _numRow, int _numCol, double _unitWireRes){  //ini
 	
 	resRow = lengthRow * unitWireRes; 
 	resCol = lengthCol * unitWireRes;
-	
+
+	TRACE("resrow = %.4e\n",resRow);
+	TRACE("rescol = %.4e\n",resCol);
+	TRACE("unitwireres = %.4e\n",unitWireRes);	
 
 	//start to initializing the subarray periphery cicuit modules
 	if (cell.memCellType == Type::SRAM) {  //if array is SRAM
@@ -168,13 +172,17 @@ void SubArray::Initialize(int _numRow, int _numCol, double _unitWireRes){  //ini
 				cell.resCellAccess = cell.resistanceOn * IR_DROP_TOLERANCE;    //calculate access CMOS resistance
 			    cell.widthAccessCMOS = CalculateOnResistance(tech.featureSize, NMOS, inputParameter.temperature, tech) / cell.resCellAccess;   //get access CMOS width
 			if (cell.widthAccessCMOS > cell.widthInFeatureSize) {	// Place transistor vertically
-				printf("Transistor width of 1T1R=%.2fF is larger than the assigned cell width=%.2fF in layout\n", cell.widthAccessCMOS, cell.widthInFeatureSize);
+				printf("Error: Transistor width of 1T1R=%.2fF is larger than the assigned cell width=%.2fF in layout\n", cell.widthAccessCMOS, cell.widthInFeatureSize);
 				exit(-1);
             }
 
 			cell.resMemCellOn = cell.resCellAccess + cell.resistanceOn;       //calculate single memory cell resistance_ON
 			cell.resMemCellOff = cell.resCellAccess + cell.resistanceOff;      //calculate single memory cell resistance_OFF
 			cell.resMemCellAvg = cell.resCellAccess + cell.resistanceAvg;      //calculate single memory cell resistance_AVG
+
+			TRACE("1t1r rram, resMemCellAvg: %.4e\n",cell.resMemCellAvg); 
+			TRACE("1t1r rram, resCellAccess: %.4e\n",cell.resCellAccess); 
+			TRACE("1t1r rram, resistanceAvg: %.4e\n",cell.resistanceAvg); 
 
 			capRow2 += CalculateGateCap(cell.widthAccessCMOS * tech.featureSize, tech) * numCol;          //sum up all the gate cap of access CMOS, as the row cap
 			capCol += CalculateDrainCap(cell.widthAccessCMOS * tech.featureSize, NMOS, cell.widthInFeatureSize * tech.featureSize, tech) * numRow;	// If capCol is found to be too large, increase cell.widthInFeatureSize to relax the limit
@@ -597,7 +605,8 @@ void SubArray::CalculateLatency(double _rampInput) {   //calculate latency for d
 					mux.CalculateLatency(colRamp, 0, 1);
 					int numInput = (int)ceil((double)numCol/numColMuxed);
 					muxDecoder.CalculateLatency(1e20, mux.capTgGateN*numInput, mux.capTgGateP*numInput, 1, 1);
-					
+				
+
 					// Read
 					if (readCircuit.mode == CMOS) {
 						double Cin = capCol + mux.capTgDrain * (2 + numColMuxed - 1) + readCircuit.capTgDrain + readCircuit.capPmosGate;

@@ -50,7 +50,7 @@ Technology::Technology() {
 
 void Technology::Initialize(int _featureSizeInNano, DeviceRoadmap _deviceRoadmap) {
 	if (initialized)
-		cout << "Warning: Already initialized!" << endl;
+		cout << "Warning: Technology already initialized!" << endl;
 
 	featureSizeInNano = _featureSizeInNano;
 	featureSize = _featureSizeInNano * 1e-9;

@@ -39,6 +39,6 @@
 #ifndef TEST_H_
 #define TEST_H_
 
-void Validate();
+void PowerIt_Full(int red, std::vector<double> gain);
 
 #endif

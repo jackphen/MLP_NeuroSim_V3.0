@@ -41,6 +41,7 @@
 
 #include <cstdlib>
 #include "Cell.h"
+#include "Debug.h"
 
 class Array {
 public:
@@ -81,7 +82,7 @@ public:
 		/* Determine number of cells per synapse (SRAM and DigitalNVM) */
 		this->numCellPerSynapse = numCellPerSynapse;
 
-		printf("\t Determined number of cells per synapse.\n");
+		TRACE("\t Determined number of cells per synapse.\n");
 
 		/* Initialize memory cells */
         int cellsPerRow; // the number of columns 
@@ -90,9 +91,9 @@ public:
         else
             cellsPerRow = arrayColSize*numCellPerSynapse;
 
-		printf("\t Number of cells per synapse: %d\n",numCellPerSynapse); 
-		printf("\t Array column size: %d\n",arrayColSize); 
-		printf("\t Number of cells per row: %d\n",cellsPerRow); 
+		TRACE("\t Number of cells per synapse: %d\n",numCellPerSynapse); 
+		TRACE("\t Array column size: %d\n",arrayColSize); 
+		TRACE("\t Number of cells per row: %d\n",cellsPerRow); 
 		
 		cell = new Cell**[cellsPerRow];
 		for (int col=0; col<cellsPerRow; col++) {
@@ -102,7 +103,7 @@ public:
 			}
 		}
 
-		printf("\t Initialized memory cells. \n");
+		TRACE("\t Initialized memory cells. \n");
 
         // initialize the conductance of the reference column
         if(refColumn == true)
@@ -118,7 +119,7 @@ public:
             }    
         }
 
-		printf("\t Initialized reference column. \n");
+		TRACE("\t Initialized reference column. \n");
 		
 		/* Initialize interconnect wires */
 		double AR;	// Aspect ratio of wire height to wire width
@@ -133,7 +134,7 @@ public:
 			case 22:	AR = 2.00; Rho = 5.41e-8; break;
 			case 14:	AR = 2.10; Rho = 7.43e-8; break;
 			case -1:	break;	// Ignore wire resistance or user define
-			default:	printf("ERROR: Wire width out of range.\n"); exit(-1);
+			default:	TRACE("ERROR: Wire width out of range.\n"); exit(-1);
 		}
 		double wireLength = wireWidth * 1e-9 * 2;	// 2F
 		if (wireWidth == -1) {
@@ -149,7 +150,7 @@ public:
 		wireCapCol = wireLength * 0.2e-15/1e-6;
 		wireGateCapRow = wireLength * 0.2e-15/1e-6;
 		
-		printf("\t Initialized interconnect wires.\n");
+		TRACE("\t Initialized interconnect wires.\n");
 
 	}
 

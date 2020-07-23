@@ -45,42 +45,23 @@ class Param {
 public:
 	Param();
 
-	/* MNIST dataset */
-	int numMnistTrainImages;// # of training images in MNIST
-	int numMnistTestImages;	// # of testing images in MNIST
-	
-	/* Algorithm parameters */
-	int numTrainImagesPerEpoch;	// # of training images per epoch
-	int totalNumEpochs;	// Total number of epochs
-	int interNumEpochs;	// Internal number of epochs (print out the results every interNumEpochs)
-	int nInput;     // # of neurons in input layer
-	int nHide;      // # of neurons in hidden layer
-	int nOutput;	// # of neurons in output layer
-	double alpha1;		// Learning rate for the synapses from input to hidden layer
-	double alpha2;		// Learning rate for the synapses from hidden to output layer
-	double maxWeight;	// Upper bound of weight value
-	double minWeight;	// Lower bound of weight value
-    char* optimization_type;
+	/* SpikUS Mapping parameters */
+	int redundancyLevel; 	// 1: single copy, 4: 4x copy of a single matrix in one array ([A1 A2; A3 A4])
+	int arraySize;
+	int maxWeight = 1;	// Upper bound of weight value
+	int minWeight = 0;	// Lower bound of weight value
+    
 
 	/* InvPowerIt Algorithm parameters */
 	int numCycles;  		// # of network cycles
-	int problemSizeRows; 		// size of matrix N
-	int problemSizeCols;
+	int problemSize; 
 	double IPIThreshold; 
 
 	/* Hardware parameters */
 	bool arrayWriteType; 			// Ideal or real write for matrix weights (true: real, false: ideal); 
-	bool useHardwareInTrainingFF;   // Use hardware in the feed forward part of training or not (true: realistic hardware, false: ideal software)
-	bool useHardwareInTrainingWU;   // Use hardware in the weight update part of training or not (true: realistic hardware, false: ideal software)
-	bool useHardwareInTraining;		// Use hardware in the training or not
-	bool useHardwareInTestingFF;    // Use hardware in the feed forward part of testing or not (true: realistic hardware, false: ideal software)
 	int numBitInput;		// # of bits of the input data (=1 for black and white data)
 	int numBitPartialSum;	// # of bits of the digital output (partial weighted sum output)
-	int pSumMaxHardware;	// Max digital output value of partial weighted sum
-	int numInputLevel;	// # of levels of the input data
 	int numWeightBit;	// # of weight bits (only for pure algorithm, SRAM and digital RRAM hardware)
-	double BWthreshold; // The black and white threshold for numBitInput=1
-	double Hthreshold;	// The spiking threshold for the hidden layer (da1 in Train.cpp and Test.cpp)
 	int numColMuxed;	// How many columns share 1 read circuit (for analog RRAM) or 1 S/A (for digital RRAM)
 	int numWriteColMuxed;	// How many columns share 1 write column decoder driver (for digital RRAM)
 	bool writeEnergyReport;	// Report write energy calculation or not
@@ -90,6 +71,7 @@ public:
 	double arrayWireWidth;	// Array wire width (nm)
 	int processNode;	// Technology node (nm)
 	double clkFreq;		// Clock frequency (Hz)
+	int numArrays; 		// Number of separate arrays/synaptic cores
 };
 
 #endif

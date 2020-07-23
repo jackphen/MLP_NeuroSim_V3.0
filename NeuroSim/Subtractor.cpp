@@ -42,6 +42,7 @@
 #include "typedef.h"
 #include "formula.h"
 #include "Subtractor.h"
+#include "../Debug.h"
 
 using namespace std;
 
@@ -55,6 +56,8 @@ void Subtractor::Initialize(int _numBit, int _numSubtractor){
 	
 	numBit = _numBit;
 	numSubtractor = _numSubtractor;
+
+	TRACE("initialized subtractors with numSubtractor = %d\n",numSubtractor); 
 	
 	// NAND
 	widthNandN = 2 * MIN_NMOS_SIZE * tech.featureSize;
@@ -75,6 +78,8 @@ void Subtractor::CalculateArea(double _newHeight, double _newWidth, AreaModify _
 	if (!initialized) {
 		cout << "[Subtractor] Error: Require initialization first!" << endl;
 	} else {
+
+		TRACE("computing area of subtractors with numSubtractor = %d\n",numSubtractor); 
 		double hNand, wNand, hInv, wInv, hNor, wNor;
 		// NAND2
 		CalculateGateArea(NAND, 2, widthNandN, widthNandP, tech.featureSize * MAX_TRANSISTOR_HEIGHT, tech, &hNand, &wNand);
@@ -108,7 +113,9 @@ void Subtractor::CalculateArea(double _newHeight, double _newWidth, AreaModify _
 			int numRowSubtractor = (int)ceil((double)numSubtractor / numSubtractorPerRow);
 			width = _newWidth;
 			height = hSubtractor * numRowSubtractor;
-
+			TRACE("width: %.4e, _newWidth: %.4e\n",width,_newWidth); 
+			TRACE("hSubtractor: %.4e, numRowSubtractor: %d\n",hSubtractor,numRowSubtractor);
+			TRACE("numSubtractorperRow: %d, numSubtractor: %d\n",numSubtractorPerRow,numSubtractor);
 		} else {    // Assume one row of Subtractor by default
 			hSubtractor = MAX(hNand, hNor);
 			wSubtractor = (wNand*10 + wNor + wInv) * numBit;
@@ -116,6 +123,8 @@ void Subtractor::CalculateArea(double _newHeight, double _newWidth, AreaModify _
 			height = hSubtractor;
 		}
 		area = height * width;
+
+		TRACE("Subtractor height: %.4e, width: %.4e, area: %.4e",height,width,area); 
 		
 		// Modify layout
 		newHeight = _newHeight;

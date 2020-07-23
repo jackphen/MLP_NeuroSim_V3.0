@@ -136,6 +136,15 @@ void NeuroSimSubArrayInitialize(SubArray *& subArray, Array *array, InputParamet
 		cell.resistanceOn = 1/static_cast<eNVM*>(array->cell[0][0])->avgMaxConductance;	// Ron resistance at Vr in the reported measurement data (need to recalculate below if considering the nonlinearity)
 		cell.resistanceOff = 1/static_cast<eNVM*>(array->cell[0][0])->avgMinConductance;	// Roff resistance at Vr in the reported measurement dat (need to recalculate below if considering the nonlinearity)
 		cell.resistanceAvg = (cell.resistanceOn + cell.resistanceOff)/2;	// Average resistance (used for energy estimation)
+		
+		/*
+		 * Note by jackphen (piergiulio dot mannocci at polimi dot it)
+		 *  
+		 * Ideal cells may have avgMinConductance set to 0 as a result of setting minConductance to 0. 
+		 * This leads to the average resistance diverging to infinity. To avoid this, the average is
+		 * checked after being computed and replaced by a suitable estimate (Ron*100). */
+		if (isinf(cell.resistanceAvg)) cell.resistanceAvg = cell.resistanceOn*100; 
+		
 		cell.resCellAccess = static_cast<eNVM*>(array->cell[0][0])->resistanceAccess;   // Access transistor resistance
 		cell.readVoltage = static_cast<eNVM*>(array->cell[0][0])->readVoltage;	// On-chip read voltage for memory cell
 		double writeVoltageLTP = static_cast<eNVM*>(array->cell[0][0])->writeVoltageLTP;
@@ -173,7 +182,7 @@ void NeuroSimSubArrayInitialize(SubArray *& subArray, Array *array, InputParamet
 
 	cell.featureSize = array->wireWidth * 1e-9;
 	if(cell.featureSize <= 0) {
-		puts("NeuroSim does not take ideal array. Has Assigned the width to 200nm.");
+		printf("Warning: NeuroSim does not take ideal array. Has Assigned the width to 200nm.");
 		cell.featureSize = 200e-9;
 	}
 
@@ -245,7 +254,7 @@ double NeuroSimSubArrayReadLatency(SubArray *subArray) {	// For 1 weighted sum t
                     // Calculate column latency
 					double tau = subArray->capCol*(subArray->cell.resMemCellAvg/(subArray->numRow/2));
 					subArray->colDelay = tau * 0.2 * subArray->numReadPulse * subArray->numColMuxed;  // assume the 15~20% voltage drop is enough for sensing
- 
+
                     // the read circuit
                     // The input capacitance of the read circuit
                     double Cin_ReadCircuit = subArray->capCol + subArray->mux.capTgDrain * (2 + subArray->numColMuxed - 1) + subArray->readCircuit.capTgDrain + subArray->readCircuit.capPmosGate;
@@ -344,6 +353,7 @@ double NeuroSimSubArrayReadLatency(SubArray *subArray) {	// For 1 weighted sum t
 				subArray->blSwitchMatrix.CalculateLatency(1e20, subArray->capRow1, subArray->resRow, subArray->numReadPulse, 1);    // Don't care write
 				double tau = subArray->capCol*(subArray->cell.resMemCellAvg/(subArray->numRow/2));
 				subArray->colDelay = tau * 0.2 * subArray->numReadPulse * subArray->numColMuxed;
+
 				if (subArray->readCircuit.mode == CMOS) {
                     // Cin is the capacitance to collect the charge
 					double Cin = subArray->capCol + subArray->mux.capTgDrain * (2 + subArray->numColMuxed - 1) + subArray->readCircuit.capTgDrain + subArray->readCircuit.capPmosGate;
@@ -362,6 +372,14 @@ double NeuroSimSubArrayReadLatency(SubArray *subArray) {	// For 1 weighted sum t
 				if (subArray->shiftAddEnable) {
 					subArray->shiftAdd.CalculateLatency(subArray->numReadPulse);
 				}
+
+				TRACE("wldecoder output latency: %.4e\n",subArray->wlDecoderOutput.readLatency);
+				TRACE("bl switch matrix latency: %.4e\n",subArray->blSwitchMatrix.readLatency);
+				TRACE("readCircuit latency: %.4e\n",subArray->readCircuit.readLatency);
+				TRACE("subtractor latency: %.4e\n",subArray->subtractor.readLatency);
+				TRACE("shiftAdd latency: %.4e\n",subArray->shiftAdd.readLatency);
+				TRACE("colDelay latency: %.4e\n",subArray->colDelay);
+
 				return 	subArray->wlDecoderOutput.readLatency +
 						subArray->blSwitchMatrix.readLatency +
 						subArray->readCircuit.readLatency +
@@ -844,6 +862,9 @@ void NeuroSimNeuronInitialize(SubArray *& subArray, InputParameter& inputParamet
 	numAdderBit = numAdderBit + 2;	// Need 1 more bit for *2 in 2w'-1 of MLP algorithm, and 1 more bit for 2's complement implementation
 	
 	int numAdder = (int)ceil((double)subArray->numCol/subArray->numCellPerSynapse/subArray->numColMuxed);
+
+	TRACE("subarray has %d columns\n",subArray->numCol); 
+	TRACE("subarray requires %d adders\n",numAdder); 
 
 	// Only need the MSB of adder output to determine it is positive or negative in 2's complement
 	dff.Initialize(subArray->numCol/subArray->numCellPerSynapse, subArray->clkFreq);

@@ -165,6 +165,13 @@ public:
 	void Write(double deltaWeightNormalized, double weight, double minWeight, double maxWeight);
 };
 
+class PoliMiDevice: public AnalogNVM {
+public:
+	PoliMiDevice(int x, int y);
+	double Read(double voltage);	// Return read current (A)
+	void Write(double deltaWeightNormalized, double weight, double minWeight, double maxWeight);
+};
+
 class RealDevice: public AnalogNVM {
 public:
 	bool nonlinearWrite;	// Consider weight update nonlinearity or not

@@ -46,67 +46,58 @@
 #include "formula.h"
 #include "Array.h"
 #include "NeuroSim.h"
+#include "Debug.h"
 
 extern Param *param;
 
-extern std::vector< std::vector<double> > weight1;
-extern std::vector< std::vector<double> > weight2;
-
-extern Array *arrayIH;
-//extern Array *arrayHO;
-
 /* Weights initialization */
-void WeightInitialize(std::string mat_name) {
+void WeightInitialize(std::string mat_name, Array *array) {
     srand(2);
+
+    std::vector<std::vector<double>>    weights(array->arrayColSize, 
+                                            std::vector<double>(array->arrayRowSize));
+
 
     std::ifstream matrix (mat_name);
     std::string row; 
 
 
     /* Initialize weights for the input layer */
-    for (int i = 0; i < arrayIH->arrayRowSize; i++) {
+    for (int i = 0; i < array->arrayColSize; i++) {
         getline(matrix,row); 
         auto rown = explode(row,';');
 
-        // printf("\tMatrix initialization: read row %d: [",i);
-        // for(int jj = 0; jj < rown.size(); jj++) {
-        //     printf("%.3f,",stof(rown[jj])); 
-        // }
-        // printf("]\n");
+        TRACE("\tMatrix initialization: read row %d: [",i);
+        for(int jj = 0; jj < rown.size(); jj++) {
+            TRACE("%.3f,",stof(rown[jj])); 
+        }
+        TRACE("]\n");
 
-        for (int j = 0; j < arrayIH->arrayColSize; j++) {
-           // weight1[i][j] = (double)(rand() % 7 +(-3) ) / 3;   // random number: 0, 0.33, 0.66 or 1
-            weight1[i][j] = stof(rown[j]);
+        for (int j = 0; j < rown.size(); j++) {
+            TRACE("%s === %f\n",rown[j].c_str(),stof(rown[j]));
+
+            weights[i][j] = stof(rown[j]);
         }
     }
-    printf("\tMatrix initialization complete.\n");
     matrix.close(); 
+
+    TRACE("\tMatrix initialization complete.\n");
+
+    /* Erase the weight of arrayIH */
+    for (int col=0; col<array->arrayColSize; col++) {
+        for (int row=0; row<array->arrayRowSize; row++) {
+            array->WriteCell(col, row, -(param->maxWeight-param->minWeight), 0 /* delta_W=-(param->maxWeight-param->minWeight) will completely erase */, param->maxWeight, param->minWeight, false);
+        }
+    }
+
+    for (int col=0; col<array->arrayColSize; col++) {
+        for (int row=0; row<array->arrayRowSize; row++) {
+            array->WriteCell(col, row, weights[col][row], weights[col][row], param->maxWeight, param->minWeight, param->arrayWriteType);
+        }
+    }
 }
 
 /* Conductance initialization (map weight to RRAM conductance or SRAM data) */
-void WeightToConductance() {
-    /* Erase the weight of arrayIH */
-    for (int col=0; col<arrayIH->arrayColSize; col++) {
-        for (int row=0; row<arrayIH->arrayRowSize; row++) {
-            arrayIH->WriteCell(col, row, -(param->maxWeight-param->minWeight), 0 /* delta_W=-(param->maxWeight-param->minWeight) will completely erase */, param->maxWeight, param->minWeight, false);
-        }
-    }
-
-    /* Write weight to arrayIH */
-    for (int col=0; col<arrayIH->arrayColSize; col++) {
-        for (int row=0; row<arrayIH->arrayRowSize; row++) {
-            arrayIH->WriteCell(col, row, weight1[col][row], weight1[col][row], param->maxWeight, param->minWeight, param->arrayWriteType);
-        }
-    }
+void WeightToConductance(Array *array) {
+    return;   
 }
-
-/* Mapping from analog current to digital output*/
-int CurrentToDigits(double I /* current */, double Imax /* max current */) {
-    return (int)(I / (Imax/param->pSumMaxHardware));
-}
-
-/* Mapping from hardware digital output to algorithm value*/
-double DigitsToAlgorithm(int outputDigits /* output digits from ADC */, double pSumMaxAlgorithm /* max value of partial weighted sum in algorithm */) {
-    return ((double)outputDigits / param->pSumMaxHardware) * pSumMaxAlgorithm;
-}
-

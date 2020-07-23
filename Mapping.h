@@ -40,9 +40,7 @@
 #ifndef MAPPING_H_
 #define MAPPING_H_
 
-void WeightInitialize(std::string mat_name);
-void WeightToConductance();
-int CurrentToDigits(double I, double Imax);
-double DigitsToAlgorithm(int outputDigits, double pSumMaxAlgorithm);
+void WeightInitialize(std::string mat_name, Array *array);
+void WeightToConductance(Array *array);
 
 #endif
