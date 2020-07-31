@@ -1,0 +1,9 @@
+experimentName=IEDM2020_EXTENDED
+arrayType=1
+problemSize=1000
+redundancyLevel=1
+numArrays=1
+matrixFiles=program_1k.txt
+matrixGains=1.0000
+solutionFile=ev_1k.txt
+arrayWriteType=0

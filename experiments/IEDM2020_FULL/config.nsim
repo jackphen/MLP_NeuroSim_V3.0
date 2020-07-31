@@ -1,0 +1,9 @@
+experimentName=IEDM2020_FULL
+arrayType=3
+problemSize=32
+redundancyLevel=4
+numArrays=3
+matrixFiles=MSB_32.txt,LSB_n_32.txt,LSB_p_32.txt
+matrixGains=1.0000,0.0911,-0.0756
+solutionFile=ev_32.txt
+arrayWriteType=0

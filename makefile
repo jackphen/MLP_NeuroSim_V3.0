@@ -38,8 +38,8 @@
 
 .SECONDEXPANSION:
 
-MAINS := main.cpp
-ALLSRC := $(wildcard *.cpp NeuroSim/*.cpp)
+MAINS := core/main.cpp
+ALLSRC := $(wildcard core/*.cpp core/NeuroSim/*.cpp)
 SRC := $(filter-out $(MAINS),$(ALLSRC))
 ALLOBJ := $(ALLSRC:.cpp=.o)
 OBJ := $(SRC:.cpp=.o)
@@ -51,7 +51,7 @@ CXXFLAGS := -O3 -std=c++0x -w
 .PHONY: all clean
 all: $(MAINS:.cpp=)
 $(MAINS:.cpp=): $(OBJ) $$@.o
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o SpikUSim
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
