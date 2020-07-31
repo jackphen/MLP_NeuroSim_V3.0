@@ -37,7 +37,15 @@
 ********************************************************************************/
 
 #include <iostream>
+#include <fstream>
 #include "FunctionUnit.h"
+
+/* Logger libraries */
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+
+extern spdlog::logger logger; 
 
 using namespace std;
 
@@ -76,6 +84,30 @@ void FunctionUnit::PrintProperty(const char* str) {
 	cout << " - Leakage Power = " << leakage*1e6 << "uW" << endl;
 	cout << " - Read Power = " << readPower*1e6 << "uW" << endl;
 	cout << " - Write Power = " << writePower*1e6 << "uW" << endl;
+}
+
+void FunctionUnit::PrintPropertyToFile(const char* str, const char* outstr) {
+
+	std::ofstream outfile(outstr,std::ios_base::app);
+
+	if (outfile.is_open()) {
+		outfile << "---------------------------------------------------------" << endl;
+		outfile << str << endl;
+		outfile << "Area = " << height*1e6 << "um x " << width*1e6 << "um = " << area*1e12 << "um^2" << endl;
+		if (totalArea)
+			outfile << "Total Area = " << totalArea*1e12 << "um^2" << endl;
+		outfile << "Timing:" << endl;
+		outfile << " - Read Latency = " << readLatency*1e9 << "ns" << endl;
+		outfile << " - Write Latency = " << writeLatency*1e9 << "ns" << endl;
+		outfile << "Power:" << endl;
+		outfile << " - Read Dynamic Energy = " << readDynamicEnergy*1e12 << "pJ" << endl;
+		outfile << " - Write Dynamic Energy = " << writeDynamicEnergy*1e12 << "pJ" << endl;
+		outfile << " - Leakage Power = " << leakage*1e6 << "uW" << endl;
+		outfile << " - Read Power = " << readPower*1e6 << "uW" << endl;
+		outfile << " - Write Power = " << writePower*1e6 << "uW" << endl;
+	} else {
+		logger.error("Could not open output file: {}",outstr);
+	}
 }
 
 void FunctionUnit::MagicLayout() {

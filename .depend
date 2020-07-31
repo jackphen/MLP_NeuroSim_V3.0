@@ -30,8 +30,34 @@ NeuroSim.o: core/NeuroSim.cpp core/NeuroSim.h \
   core/NeuroSim/Subtractor.h core/NeuroSim/WLNewDecoderDriver.h \
   core/NeuroSim/constant.h core/NeuroSim/NewSwitchMatrix.h core/Array.h \
   core/Cell.h core/Debug.h core/Param.h
-Param.o: core/Param.cpp core/formula.h core/Debug.h core/Param.h
-Results.o: core/Results.cpp core/Results.h
+Param.o: core/Param.cpp core/formula.h core/Debug.h core/Param.h \
+  core/spdlog/spdlog.h core/spdlog/common.h core/spdlog/tweakme.h \
+  core/spdlog/details/null_mutex.h core/spdlog/fmt/fmt.h \
+  core/spdlog/fmt/bundled/core.h core/spdlog/fmt/bundled/format.h \
+  core/spdlog/fmt/bundled/format-inl.h core/spdlog/common-inl.h \
+  core/spdlog/details/registry.h core/spdlog/cfg/log_levels.h \
+  core/spdlog/details/registry-inl.h \
+  core/spdlog/details/periodic_worker.h \
+  core/spdlog/details/periodic_worker-inl.h core/spdlog/logger.h \
+  core/spdlog/details/log_msg.h core/spdlog/details/log_msg-inl.h \
+  core/spdlog/details/os.h core/spdlog/details/os-inl.h \
+  core/spdlog/details/backtracer.h core/spdlog/details/log_msg_buffer.h \
+  core/spdlog/details/log_msg_buffer-inl.h \
+  core/spdlog/details/circular_q.h core/spdlog/details/backtracer-inl.h \
+  core/spdlog/logger-inl.h core/spdlog/sinks/sink.h \
+  core/spdlog/formatter.h core/spdlog/sinks/sink-inl.h \
+  core/spdlog/pattern_formatter.h core/spdlog/pattern_formatter-inl.h \
+  core/spdlog/details/fmt_helper.h core/spdlog/sinks/ansicolor_sink.h \
+  core/spdlog/details/console_globals.h \
+  core/spdlog/sinks/ansicolor_sink-inl.h core/spdlog/version.h \
+  core/spdlog/details/synchronous_factory.h core/spdlog/spdlog-inl.h \
+  core/spdlog/sinks/basic_file_sink.h core/spdlog/details/file_helper.h \
+  core/spdlog/details/file_helper-inl.h core/spdlog/sinks/base_sink.h \
+  core/spdlog/sinks/base_sink-inl.h \
+  core/spdlog/sinks/basic_file_sink-inl.h \
+  core/spdlog/sinks/stdout_color_sinks.h \
+  core/spdlog/sinks/stdout_color_sinks-inl.h
+Results.o: core/Results.cpp core/Results.h core/Param.h
 Test.o: core/Test.cpp core/formula.h core/Param.h core/Array.h \
   core/Cell.h core/Debug.h core/Mapping.h core/NeuroSim.h \
   core/NeuroSim/InputParameter.h core/NeuroSim/typedef.h \
@@ -46,7 +72,32 @@ Test.o: core/Test.cpp core/formula.h core/Param.h core/Array.h \
   core/NeuroSim/SwitchMatrix.h core/NeuroSim/ShiftAdd.h \
   core/NeuroSim/Subtractor.h core/NeuroSim/WLNewDecoderDriver.h \
   core/NeuroSim/constant.h core/NeuroSim/NewSwitchMatrix.h \
-  core/Results.h
+  core/Results.h core/spdlog/spdlog.h core/spdlog/common.h \
+  core/spdlog/tweakme.h core/spdlog/details/null_mutex.h \
+  core/spdlog/fmt/fmt.h core/spdlog/fmt/bundled/core.h \
+  core/spdlog/fmt/bundled/format.h core/spdlog/fmt/bundled/format-inl.h \
+  core/spdlog/common-inl.h core/spdlog/details/registry.h \
+  core/spdlog/cfg/log_levels.h core/spdlog/details/registry-inl.h \
+  core/spdlog/details/periodic_worker.h \
+  core/spdlog/details/periodic_worker-inl.h core/spdlog/logger.h \
+  core/spdlog/details/log_msg.h core/spdlog/details/log_msg-inl.h \
+  core/spdlog/details/os.h core/spdlog/details/os-inl.h \
+  core/spdlog/details/backtracer.h core/spdlog/details/log_msg_buffer.h \
+  core/spdlog/details/log_msg_buffer-inl.h \
+  core/spdlog/details/circular_q.h core/spdlog/details/backtracer-inl.h \
+  core/spdlog/logger-inl.h core/spdlog/sinks/sink.h \
+  core/spdlog/formatter.h core/spdlog/sinks/sink-inl.h \
+  core/spdlog/pattern_formatter.h core/spdlog/pattern_formatter-inl.h \
+  core/spdlog/details/fmt_helper.h core/spdlog/sinks/ansicolor_sink.h \
+  core/spdlog/details/console_globals.h \
+  core/spdlog/sinks/ansicolor_sink-inl.h core/spdlog/version.h \
+  core/spdlog/details/synchronous_factory.h core/spdlog/spdlog-inl.h \
+  core/spdlog/sinks/basic_file_sink.h core/spdlog/details/file_helper.h \
+  core/spdlog/details/file_helper-inl.h core/spdlog/sinks/base_sink.h \
+  core/spdlog/sinks/base_sink-inl.h \
+  core/spdlog/sinks/basic_file_sink-inl.h \
+  core/spdlog/sinks/stdout_color_sinks.h \
+  core/spdlog/sinks/stdout_color_sinks-inl.h
 formula.o: core/formula.cpp
 main.o: core/main.cpp core/Cell.h core/Array.h core/Debug.h \
   core/formula.h core/NeuroSim.h core/NeuroSim/InputParameter.h \
@@ -61,7 +112,33 @@ main.o: core/main.cpp core/Cell.h core/Array.h core/Debug.h \
   core/NeuroSim/SwitchMatrix.h core/NeuroSim/ShiftAdd.h \
   core/NeuroSim/Subtractor.h core/NeuroSim/WLNewDecoderDriver.h \
   core/NeuroSim/constant.h core/NeuroSim/NewSwitchMatrix.h core/Param.h \
-  core/Test.h core/Mapping.h core/Results.h core/Definition.h
+  core/Test.h core/Mapping.h core/Results.h core/Definition.h \
+  core/spdlog/spdlog.h core/spdlog/common.h core/spdlog/tweakme.h \
+  core/spdlog/details/null_mutex.h core/spdlog/fmt/fmt.h \
+  core/spdlog/fmt/bundled/core.h core/spdlog/fmt/bundled/format.h \
+  core/spdlog/fmt/bundled/format-inl.h core/spdlog/common-inl.h \
+  core/spdlog/details/registry.h core/spdlog/cfg/log_levels.h \
+  core/spdlog/details/registry-inl.h \
+  core/spdlog/details/periodic_worker.h \
+  core/spdlog/details/periodic_worker-inl.h core/spdlog/logger.h \
+  core/spdlog/details/log_msg.h core/spdlog/details/log_msg-inl.h \
+  core/spdlog/details/os.h core/spdlog/details/os-inl.h \
+  core/spdlog/details/backtracer.h core/spdlog/details/log_msg_buffer.h \
+  core/spdlog/details/log_msg_buffer-inl.h \
+  core/spdlog/details/circular_q.h core/spdlog/details/backtracer-inl.h \
+  core/spdlog/logger-inl.h core/spdlog/sinks/sink.h \
+  core/spdlog/formatter.h core/spdlog/sinks/sink-inl.h \
+  core/spdlog/pattern_formatter.h core/spdlog/pattern_formatter-inl.h \
+  core/spdlog/details/fmt_helper.h core/spdlog/sinks/ansicolor_sink.h \
+  core/spdlog/details/console_globals.h \
+  core/spdlog/sinks/ansicolor_sink-inl.h core/spdlog/version.h \
+  core/spdlog/details/synchronous_factory.h core/spdlog/spdlog-inl.h \
+  core/spdlog/sinks/basic_file_sink.h core/spdlog/details/file_helper.h \
+  core/spdlog/details/file_helper-inl.h core/spdlog/sinks/base_sink.h \
+  core/spdlog/sinks/base_sink-inl.h \
+  core/spdlog/sinks/basic_file_sink-inl.h \
+  core/spdlog/sinks/stdout_color_sinks.h \
+  core/spdlog/sinks/stdout_color_sinks-inl.h
 Adder.o: core/NeuroSim/Adder.cpp core/NeuroSim/constant.h \
   core/NeuroSim/typedef.h core/NeuroSim/formula.h \
   core/NeuroSim/Technology.h core/NeuroSim/Adder.h \
@@ -78,7 +155,32 @@ DecoderDriver.o: core/NeuroSim/DecoderDriver.cpp core/NeuroSim/constant.h \
   core/NeuroSim/InputParameter.h core/NeuroSim/MemCell.h \
   core/NeuroSim/FunctionUnit.h
 FunctionUnit.o: core/NeuroSim/FunctionUnit.cpp \
-  core/NeuroSim/FunctionUnit.h
+  core/NeuroSim/FunctionUnit.h core/spdlog/spdlog.h core/spdlog/common.h \
+  core/spdlog/tweakme.h core/spdlog/details/null_mutex.h \
+  core/spdlog/fmt/fmt.h core/spdlog/fmt/bundled/core.h \
+  core/spdlog/fmt/bundled/format.h core/spdlog/fmt/bundled/format-inl.h \
+  core/spdlog/common-inl.h core/spdlog/details/registry.h \
+  core/spdlog/cfg/log_levels.h core/spdlog/details/registry-inl.h \
+  core/spdlog/details/periodic_worker.h \
+  core/spdlog/details/periodic_worker-inl.h core/spdlog/logger.h \
+  core/spdlog/details/log_msg.h core/spdlog/details/log_msg-inl.h \
+  core/spdlog/details/os.h core/spdlog/details/os-inl.h \
+  core/spdlog/details/backtracer.h core/spdlog/details/log_msg_buffer.h \
+  core/spdlog/details/log_msg_buffer-inl.h \
+  core/spdlog/details/circular_q.h core/spdlog/details/backtracer-inl.h \
+  core/spdlog/logger-inl.h core/spdlog/sinks/sink.h \
+  core/spdlog/formatter.h core/spdlog/sinks/sink-inl.h \
+  core/spdlog/pattern_formatter.h core/spdlog/pattern_formatter-inl.h \
+  core/spdlog/details/fmt_helper.h core/spdlog/sinks/ansicolor_sink.h \
+  core/spdlog/details/console_globals.h \
+  core/spdlog/sinks/ansicolor_sink-inl.h core/spdlog/version.h \
+  core/spdlog/details/synchronous_factory.h core/spdlog/spdlog-inl.h \
+  core/spdlog/sinks/basic_file_sink.h core/spdlog/details/file_helper.h \
+  core/spdlog/details/file_helper-inl.h core/spdlog/sinks/base_sink.h \
+  core/spdlog/sinks/base_sink-inl.h \
+  core/spdlog/sinks/basic_file_sink-inl.h \
+  core/spdlog/sinks/stdout_color_sinks.h \
+  core/spdlog/sinks/stdout_color_sinks-inl.h
 Mux.o: core/NeuroSim/Mux.cpp core/NeuroSim/constant.h \
   core/NeuroSim/formula.h core/NeuroSim/Technology.h \
   core/NeuroSim/typedef.h core/NeuroSim/Mux.h \

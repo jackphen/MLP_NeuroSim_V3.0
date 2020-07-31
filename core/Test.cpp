@@ -53,6 +53,13 @@
 #include "Debug.h"
 #include "Results.h"
 
+/* Logger libraries */
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+
+extern spdlog::logger logger;
+
 extern Param *param;
 extern Results *results; 
 
@@ -78,7 +85,6 @@ extern char benchmark[200];
 /* Validation */
 void PowerIt_Full() {
 
-
 	int numBatchReadSynapse;    // # of read synapses in a batch read operation (decide later)
 	
 	std::vector<std::vector<double>> HWIout(param->numArrays,
@@ -99,35 +105,30 @@ void PowerIt_Full() {
 	std::vector<double> sumNeuroSimReadEnergy(param->numArrays,0);		// Temporary variable vector to store neuron peripherals read energy for each subarray
 	std::vector<double> sumReadLatency(param->numArrays,0); 			// Temporary variable vector to store overall latency for each subarray
 
+	double maxIout = 0; 		// Maximum output current in a single iteration (needed to quantize)
+	double maxOutput = 1; 		// Maximum output value (needed to normalize)
+	double max_ev = 0; 			// Maximum value of the eigenvector (needed to normalize)
 
-	double maxIout = 0; 						// Maximum output current in a single iteration (needed to quantize)
-	double MAE = 0; 							// Mean absolute error
-	double maxOutput = 1; 						// Maximum output value (needed to normalize)
-	double max_ev = 0; 							// Maximum value of the eigenvector (needed to normalize)
-
-    double readVoltageIH,readVoltageMSB;
-    double readPulseWidthIH,readPulseWidthMSB;
-
-	int numArrayRows = (int) sqrt(param->redundancyLevel)*param->problemSize;
-	int numArrayCols = (int) sqrt(param->redundancyLevel)*param->problemSize; 
+    double readVoltageIH;		// Cell read voltage (needed for energy computation)				
+    double readPulseWidthIH;	// Cell read pulse width (needed for energy computation)
     
+	
 	/* All arrays have the same memory device, so readVoltage and readPulse are read from the first. */
 	if(eNVM* temp = dynamic_cast<eNVM*>(arrays[0]->cell[0][0]))
     {
         readVoltageIH = static_cast<eNVM*>(arrays[0]->cell[0][0])->readVoltage;
         readPulseWidthIH = static_cast<eNVM*>(arrays[0]->cell[0][0])->readPulseWidth;
-		readVoltageIH = 0.05; 
     }
 
-	printf("\nInitiating eigenvector algorithm.\n");
+	logger.info("Initiating eigenvector algorithm.");
 
 	/* Threshold adjustment: the nominal threshold is adjusted to the mapping conductance */
 	bool digitalNVM = false, parallelRead = false;
 
 	if (AnalogNVM *temp = dynamic_cast<AnalogNVM*>(arrays[0]->cell[0][0])) {
-		printf("Threshold nominal: %.4e, Gmax: %.4e  <-->", param->IPIThreshold,(static_cast<eNVM*>(arrays[0]->cell[0][0])->maxConductance)*readVoltageIH);
+		logger.trace("Threshold nominal: {}, Gmax: {}", param->IPIThreshold,(static_cast<eNVM*>(arrays[0]->cell[0][0])->maxConductance)*readVoltageIH);
 		param->IPIThreshold = param->IPIThreshold * readVoltageIH / param->maxWeight * (static_cast<eNVM*>(arrays[0]->cell[0][0])->maxConductance);
-		printf("Threshold real: %.4e \n",param->IPIThreshold);
+		logger.trace("Threshold real: {}",param->IPIThreshold);
 	}
 	else if(DigitalNVM*temp = dynamic_cast<DigitalNVM*>(arrays[0]->cell[0][0])) {
 		
@@ -156,7 +157,6 @@ void PowerIt_Full() {
 	}
 
     eigenvector.close();
-
 
 	for (int ii = 0; ii < param->numArrays; ii++) {
 		/* ****************************************************************
@@ -189,7 +189,7 @@ void PowerIt_Full() {
 				for (int j = 0; j < param->problemSize; j++) 
 				{
 					HWInput[ii][j+r*param->problemSize] = integerize(Input[j],param->numBitInput);
-					TRACE("\tInput[%d] = %.4e <--> HWInput[%d+%d] = %d\n",j,Input[j],j,r*param->problemSize,HWInput[ii][j+r*param->problemSize]);
+					logger.trace("Input[{}] = {} <--> HWInput[{}+{}] = {}",j,Input[j],j,r*param->problemSize,HWInput[ii][j+r*param->problemSize]);
 				}
 			}
 		}
@@ -266,7 +266,7 @@ void PowerIt_Full() {
 			}
 		}
 
-		TRACE("\tMVM Complete.\n\tInitiating output extraction.\n"); 
+		logger.trace("MVM Complete. Initiating output extraction."); 
 
 		/* ********************************************
 		 * 				Extraction of Output
@@ -292,7 +292,7 @@ void PowerIt_Full() {
 		}
 		for (int j = 0; j < param->problemSize; j++) {
 			Output[j] = Output[j] / param->redundancyLevel;
-			TRACE("\tOutput[%d] = %.4e\n",j,Output[j]); 
+			logger.trace("Output[{}] = {}",j,Output[j]); 
 		}
 
 		/* Output is then scaled by Ith. */
@@ -337,16 +337,15 @@ void PowerIt_Full() {
 		 * of the solution and update the energy report.
 		 * ********************************************/
 
-		// Mean absolute error: MAE = sum(|x-x_hat|)/N
-		MAE = 0; 
+		// Mean absolute error: results->MAE = sum(|x-x_hat|)/N
+		results->MAE = 0; 
 		for (int j = 0; j < param->problemSize; j++) {
-			MAE += abs(Output[j] - EvExact[j]);
+			results->MAE += abs(Output[j] - EvExact[j]);
 		}
-		MAE = MAE / param->problemSize;
+		results->MAE = results->MAE / param->problemSize;
 
 		// Energy report
 		for (int ii = 0; ii < param->numArrays; ii++) {
-
 			numBatchReadSynapse = (int)ceil((double) arrays[ii]->arrayColSize/param->numColMuxed);
 			#pragma omp critical    // Use critical here since NeuroSim class functions may update its member variables
 			for (int j=0; j<arrays[ii]->arrayColSize; j+=numBatchReadSynapse) {
@@ -358,6 +357,7 @@ void PowerIt_Full() {
 						}
 					}
 				}
+
 				subArrays[ii]->activityRowRead = (double)numActiveRows/arrays[ii]->arrayRowSize/param->numBitInput;
 				sumSubArrayReadEnergy[ii] += NeuroSimSubArrayReadEnergy(subArrays[ii]);
 				sumNeuroSimReadEnergy[ii] += NeuroSimNeuronReadEnergy(subArrays[ii], *adders[ii], *muxs[ii], *muxDecoders[ii], *dffs[ii], *subtractors[ii]);
@@ -365,93 +365,57 @@ void PowerIt_Full() {
 				sumReadLatency[ii] += NeuroSimNeuronReadLatency(subArrays[ii], *adders[ii], *muxs[ii], *muxDecoders[ii], *dffs[ii], *subtractors[ii]);
 			}
 
-
-		TRACE("\tRead latency[%d]: \t%.4e s\n", ii, sumReadLatency[ii]);
-		TRACE("\tRead energy[%d]: \t%.4e J\n",ii, sumNeuroSimReadEnergy[ii]);
+			logger.trace("Read latency[{}]: {} s", ii, sumReadLatency[ii]);
+			logger.trace("Read energy[{}]: {} J",ii, sumNeuroSimReadEnergy[ii]);
 		}
-		TRACE("\tAccuracy at cycle #%d: \t%.2e%\n", i, MAE);
+
+		logger.trace("Accuracy at cycle #{}: {}", i, results->MAE);
 	}	
 
 
-	printf("Eigenvector algorithm completed successfully.\n\tv_comp = ["); 
+	logger.info("Eigenvector algorithm completed successfully.");
+	
+	std::string vcomp = "v_comp = ["; 
 	for(int j = 0; j < param->problemSize; j++) {
-		printf("%.4e,",Output[j]);
+		vcomp = vcomp + std::to_string(Output[j]) + ",";
 	}
-	printf("]';\n");
-
-
+	vcomp = vcomp + "]';";
+	logger.warn("{}",vcomp);
 
 	/* *********************************************************+
 	 * 				       BENCHMARK RESULTS 
 	 * **********************************************************/	 
-	printf("-----------------------------------------------------------------\n");
-	printf("                         SOLUTION REPORT                         \n");
-	printf("-----------------------------------------------------------------\n");
-	printf("Neuron latency: %.4e",NeuroSimNeuronReadLatency(subArrays[0], *adders[0], *muxs[0], *muxDecoders[0], *dffs[0], *subtractors[0]));
-
-	double totalNeuronArea = 0; 
-	double totalMemoryArea = 0; 
-	double totalNeuronLeakage = 0; 
-	double totalMemoryLeakage = 0;
-
-	double worstLatency = 0; 
-	double totalMemoryEnergy = 0; 
-	double totalPeriphEnergy = 0; 
-	double totalNeuronEnergy = 0; 
+	
 	for(int ii = 0; ii < param->numArrays; ii++) {
-		TRACE("-----------------------------------------------------------------\n");
-		TRACE("                           ARRAY #%d                             \n",ii);
-		TRACE("-----------------------------------------------------------------\n");
-
-		TRACE("\nComputation latency, total: \t\t %.4e us\n",sumReadLatency[ii]/1e-6);	
-		TRACE("\nComputation energy, memory array: \t %.4e pJ\n",sumArrayReadEnergy[ii]/1e-12);	
-		TRACE("Computation energy, peripherals: \t %.4e pJ\n",sumNeuroSimReadEnergy[ii]/1e-12);	
-		TRACE("Computation energy, total: \t\t %.4e pJ\n",(sumArrayReadEnergy[ii] + sumNeuroSimReadEnergy[ii])/1e-12);	
-
-		TRACE("-----------------------------------------------------------------\n");
-
-		if (sumReadLatency[ii] > worstLatency) worstLatency = sumReadLatency[ii];
-		totalMemoryEnergy += sumArrayReadEnergy[ii];
-		totalPeriphEnergy += sumSubArrayReadEnergy[ii];
-		totalNeuronEnergy += sumNeuroSimReadEnergy[ii];	
+		if (sumReadLatency[ii] > results->totalLatency) results->totalLatency = sumReadLatency[ii];
+		results->totalCoreMemoryEnergy += sumArrayReadEnergy[ii];
+		results->totalCorePeripheralEnergy += sumSubArrayReadEnergy[ii];
+		results->totalCoreEnergy += (sumArrayReadEnergy[ii] + sumSubArrayReadEnergy[ii]);
+		results->totalNeuronEnergy += sumNeuroSimReadEnergy[ii];	
 	}
 
-	double totalCoreEnergy = totalMemoryEnergy + totalPeriphEnergy; 
-
-	TRACE("-----------------------------------------------------------------\n");
-	TRACE("|                              TOTAL                            |\n");
-	TRACE("-----------------------------------------------------------------\n");
-	printf("Mean Absolute Error (MAE): \t\t %.4e\n",MAE);
-	printf("\nSolution time: \t\t\t\t %.4e us\n",worstLatency/1e-6);
-
-	printf("\nComputational performance: \t\t %.4e TOPS\n",pow(param->problemSize,2)*param->numCycles/(worstLatency)/1e12);		
-	
-	printf("\nSolution energy, synaptic cores: \t %.4e pJ\n",totalCoreEnergy/1e-12);
-	printf("\t\tmemory array: \t\t\t %.4e pJ\n",totalMemoryEnergy/1e-12);
-	printf("\t\tperipherals: \t\t\t %.4e pJ\n",(totalCoreEnergy-totalMemoryEnergy)/1e-12);
-	printf("Solution energy, neurons: \t\t %.4e pJ\n",totalNeuronEnergy/1e-12);
-
-	printf("Solution energy, total: \t\t %.4e pJ\n",(totalNeuronEnergy+totalCoreEnergy)/1e-12);
-
-	printf("\nEnergy Performance: \t\t\t %.4e TOPS/W\n",pow(param->problemSize,2)*param->numCycles/(totalNeuronEnergy+totalCoreEnergy)/(1e12));	
-
-	printf("-----------------------------------------------------------------\n");
-	printf("-----------------------------------------------------------------\n");
-
-	sprintf(benchmark,"%s%.4e,",benchmark,worstLatency); 
-	sprintf(benchmark,"%s%.4e,",benchmark,totalMemoryEnergy); 
-	sprintf(benchmark,"%s%.4e,",benchmark,totalNeuronEnergy); 
-	sprintf(benchmark,"%s%.4e,",benchmark,totalMemoryEnergy+totalNeuronEnergy); 
-
-	results->Throughput = pow(param->problemSize,2)*param->numCycles/(worstLatency);
-	results->TotalLatency = worstLatency; 
-
-	results->EnergyPerformance = pow(param->problemSize,2)*param->numCycles/(totalNeuronEnergy+totalCoreEnergy);
-	results->TotalEnergy = totalNeuronEnergy + totalCoreEnergy; 
-	results->TotalCoreEnergy = totalCoreEnergy; 
-	results->TotalCoreMemoryEnergy = totalMemoryEnergy;
-	results->TotalCorePeripheralEnergy = totalCoreEnergy - totalMemoryEnergy; 
+	results->totalEnergy = results->totalCoreEnergy + results->totalNeuronEnergy; 
+	results->throughput = pow(param->problemSize,2)*param->numCycles/results->totalLatency;
+	results->energyPerformance = pow(param->problemSize,2)*param->numCycles/(results->totalEnergy);
 
 	return; 
 }
 
+	// sprintf(benchmark,"%s%.4e,",benchmark,worstLatency); 
+	// sprintf(benchmark,"%s%.4e,",benchmark,totalMemoryEnergy); 
+	// sprintf(benchmark,"%s%.4e,",benchmark,totalNeuronEnergy); 
+	// sprintf(benchmark,"%s%.4e,",benchmark,totalMemoryEnergy+totalNeuronEnergy); 
+// printf("-----------------------------------------------------------------\n");
+// 	printf("                         SOLUTION REPORT                         \n");
+// 	printf("-----------------------------------------------------------------\n");
+// 	printf("Neuron latency: %.4e",NeuroSimNeuronReadLatency(subArrays[0], *adders[0], *muxs[0], *muxDecoders[0], *dffs[0], *subtractors[0]));
+// TRACE("-----------------------------------------------------------------\n");
+// 		TRACE("                           ARRAY #%d                             \n",ii);
+// 		TRACE("-----------------------------------------------------------------\n");
+
+// 		TRACE("\nComputation latency, total: \t\t %.4e us\n",sumReadLatency[ii]/1e-6);	
+// 		TRACE("\nComputation energy, memory array: \t %.4e pJ\n",sumArrayReadEnergy[ii]/1e-12);	
+// 		TRACE("Computation energy, peripherals: \t %.4e pJ\n",sumNeuroSimReadEnergy[ii]/1e-12);	
+// 		TRACE("Computation energy, total: \t\t %.4e pJ\n",(sumArrayReadEnergy[ii] + sumNeuroSimReadEnergy[ii])/1e-12);	
+
+// 		TRACE("-----------------------------------------------------------------\n");

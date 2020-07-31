@@ -46,7 +46,7 @@ OBJ := $(SRC:.cpp=.o)
 
 CXX := g++
 #CXXFLAGS := -fopenmp -O3 -std=c++0x -w
-CXXFLAGS := -O3 -std=c++0x -w
+CXXFLAGS := -O3 -std=c++0x -I core/ -w 
 
 .PHONY: all clean
 all: $(MAINS:.cpp=)

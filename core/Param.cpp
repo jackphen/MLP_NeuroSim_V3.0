@@ -42,6 +42,12 @@
 #include "Debug.h"
 #include "Param.h"
 
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+
+extern spdlog::logger logger;
+
 Param::Param() {
 
 	maxWeight = 0;	// Upper bound of weight value
@@ -90,6 +96,7 @@ void Param::ReadConfigFile(std::string config_file) {
 	if (config.is_open()) {
 
 		std::cout << "Configuration file found!\n";
+		logger.warn("Configuration file found!");
 
 		while (!config.eof()) {
 
@@ -98,27 +105,21 @@ void Param::ReadConfigFile(std::string config_file) {
 
 			if (rown[0].compare("experimentName") == 0) {
 				experimentName = rown[1];
-				TRACE("Experiment: %s\n",experimentName.c_str());
 			}
 			else if (rown[0].compare("arrayType") == 0) {
 				arrayType = stoi(rown[1]);
-				TRACE("ArrayType: %d\n",arrayType);
 			}
 			else if (rown[0].compare("problemSize") == 0) {
 				problemSize = stoi(rown[1]);
-				TRACE("ProblemSize: %d\n",problemSize);
 			}
 			else if (rown[0].compare("numWeightBit") == 0) {
 				numWeightBit = stoi(rown[1]);
-				TRACE("numWeightBit: %d",stoi(rown[1])); 
 			}
 			else if (rown[0].compare("redundancyLevel") == 0) {	
 				redundancyLevel = stoi(rown[1]);
-				TRACE("RedundancyLevel: %d\n",redundancyLevel);
 			}
 			else if (rown[0].compare("numArrays") == 0) {
 				numArrays = stoi(rown[1]);
-				TRACE("NumArrays: %d\n",numArrays);
 			}
 			else if (rown[0].compare("matrixFiles") == 0) {
 				matrixFiles = explode(rown[1],',');
@@ -148,14 +149,21 @@ void Param::ReadConfigFile(std::string config_file) {
 				numBitInput = stoi(rown[1]);
 			}
 		}
+
+		LogConfig(); 
 	}
 	else { 
 
-		printf("No configuration file found.\n");
+		logger.warn("No configuration file found!"); 
+
+		/* Experiment name */
+		std::cout << "Experiment name:"; std::cin >> experimentName;
 
 		/* Array type */
 		std::cout << "Array type [1 1T1R HP, 2 SRAM, 3 1T1R Fairy]: "; std::cin >> arrayType;
+
 		if (arrayType == 2) {std::cout << "SRAM precision [bits]: "; std::cin >> numWeightBit; };
+
 
 		/* Problem size */
 		std::cout << "Problem size: "; 
@@ -180,6 +188,39 @@ void Param::ReadConfigFile(std::string config_file) {
 		/* Array write type */
 		std::cout << "Cell write type [1 real, 0 ideal]: "; 	
 		std::cin >> arrayWriteType;
+
+		/* Save config prompt */
+		char save = 'n'; 
+		std::cout << "Save configuration for future reuse? [y/n]";
+		std::cin >> save;
+
+		if (save == 'y') WriteConfigFile("config.nsim"); 
 	}
 	return;
+}
+
+void Param::WriteConfigFile(std::string config_file) {
+	logger.warn("Missing WriteConfigFile() function. Config file will not be saved.");
+}
+
+void Param::LogConfig() {
+	logger.info("experimentName: {}",experimentName.c_str());
+	logger.info("arrayType: {}",arrayType);
+	logger.info("numWeightBit: {}",numWeightBit); 
+	logger.info("problemSize: {}",problemSize);
+	logger.info("redundancyLevel: {}",redundancyLevel);
+	logger.info("numArrays: {}",numArrays);
+
+	for (int jj = 0; jj < matrixFiles.size(); jj++) {
+		logger.info("matrixFiles[{}]: {}",jj,matrixFiles[jj]);
+	}
+	for (int jj = 0; jj < matrixGains.size(); jj++) {
+		logger.info("matrixGains[{}]: {}",jj,matrixGains[jj]);
+	}
+	logger.info("solutionFile: {}",solutionFile);
+	logger.info("arrayWriteType: {}",arrayWriteType);
+	logger.info("numColMuxed: {}",numColMuxed);
+	logger.info("IPIThreshold: {}",IPIThreshold);
+	logger.info("numCycles: {}",numCycles);
+	logger.info("numBitInput: {}",numBitInput);
 }

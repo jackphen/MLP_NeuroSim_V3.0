@@ -55,6 +55,7 @@ public:
 
 	/* Functions */
 	void PrintProperty(const char* str);
+	void PrintPropertyToFile(const char* str, const char* outstr);
 	void Initialize(ReadCircuitMode _mode, int _numReadCol, int _maxNumIntBit, SpikingMode _spikingMode, double _clkFreq);
 	void CalculateArea(double _newWidth);
 	void CalculateLatency(double numRead);

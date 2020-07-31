@@ -1,0 +1,26 @@
+[2020-07-31 16:19:57.341] [SpikUSim] [info] SpikUSim Started.
+[2020-07-31 16:19:57.342] [SpikUSim] [warning] Configuration file found!
+[2020-07-31 16:19:57.342] [SpikUSim] [info] experimentName: IEDM2020_SRAM
+[2020-07-31 16:19:57.342] [SpikUSim] [info] arrayType: 2
+[2020-07-31 16:19:57.342] [SpikUSim] [info] numWeightBit: 6
+[2020-07-31 16:19:57.342] [SpikUSim] [info] problemSize: 32
+[2020-07-31 16:19:57.342] [SpikUSim] [info] redundancyLevel: 1
+[2020-07-31 16:19:57.342] [SpikUSim] [info] numArrays: 1
+[2020-07-31 16:19:57.342] [SpikUSim] [info] matrixFiles[0]: target_32.txt
+[2020-07-31 16:19:57.342] [SpikUSim] [info] matrixGains[0]: 1.0
+[2020-07-31 16:19:57.342] [SpikUSim] [info] solutionFile: ev_32.txt
+[2020-07-31 16:19:57.342] [SpikUSim] [info] arrayWriteType: false
+[2020-07-31 16:19:57.342] [SpikUSim] [info] numColMuxed: 1
+[2020-07-31 16:19:57.342] [SpikUSim] [info] IPIThreshold: 7.1642
+[2020-07-31 16:19:57.342] [SpikUSim] [info] numCycles: 6
+[2020-07-31 16:19:57.342] [SpikUSim] [info] numBitInput: 8
+[2020-07-31 16:19:57.343] [SpikUSim] [info] 
+Initialized all arrays.
+
+[2020-07-31 16:19:57.343] [SpikUSim] [info] 
+Started array programming phase.
+
+[2020-07-31 16:19:57.345] [SpikUSim] [info] Initiating eigenvector algorithm.
+[2020-07-31 16:19:57.351] [SpikUSim] [info] Eigenvector algorithm completed successfully.
+[2020-07-31 16:19:57.351] [SpikUSim] [warning] v_comp = [0.8709680.9130010.8875860.9608990.8905180.9579670.9413490.9384160.9608990.8905180.9325510.8875860.9442820.9618770.9364610.9413490.9130010.9071360.8963830.9169110.8954060.9433040.9550341.0000000.9081130.8856300.9012710.9501470.9051810.8797650.9452590.885630]';
+[2020-07-31 16:19:57.351] [SpikUSim] [warning] Completed! SpikUSim will now exit.

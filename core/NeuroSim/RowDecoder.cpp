@@ -395,3 +395,6 @@ void RowDecoder::PrintProperty(const char* str) {
 	FunctionUnit::PrintProperty(str);
 }
 
+void RowDecoder::PrintPropertyToFile(const char* str, const char* outstr) {
+	FunctionUnit::PrintPropertyToFile(str,outstr);
+}

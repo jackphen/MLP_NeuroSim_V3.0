@@ -55,6 +55,7 @@ public:
 
 	/* Functions */
 	void PrintProperty(const char* str);
+	void PrintPropertyToFile(const char* str, const char* outstr);
 	void PrintMagicProperty();
 	void Initialize(int _numDff, double _clkFreq);
 	void CalculateArea(double _newHeight, double _newWidth, AreaModify _option);

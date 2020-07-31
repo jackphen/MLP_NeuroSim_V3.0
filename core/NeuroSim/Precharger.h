@@ -55,6 +55,7 @@ public:
 
 	/* Functions */
 	void PrintProperty(const char* str);
+	void PrintPropertyToFile(const char* str, const char* outstr);
 	void Initialize(int _numCol, double _resLoad, double _activityColWrite, int _numReadCellPerOperationNeuro, int _numWriteCellPerOperationNeuro);
 	void CalculateArea(double _newHeight, double _newWidth, AreaModify _option);
 	void CalculateLatency(double _rampInput, double _capLoad, double numRead, double numWrite);

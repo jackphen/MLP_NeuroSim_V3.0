@@ -138,3 +138,8 @@ void VoltageSenseAmp::PrintProperty(const char* str) {
 	FunctionUnit::PrintProperty(str);
 }
 
+void VoltageSenseAmp::PrintPropertyToFile(const char* str, const char* outstr) {
+	FunctionUnit::PrintPropertyToFile(str,outstr);
+}
+
+

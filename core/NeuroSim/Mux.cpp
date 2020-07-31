@@ -193,3 +193,7 @@ void Mux::PrintProperty(const char* str) {
 	FunctionUnit::PrintProperty(str);
 }
 
+void Mux::PrintPropertyToFile(const char* str, const char* outstr) {
+	FunctionUnit::PrintPropertyToFile(str,outstr);
+}
+

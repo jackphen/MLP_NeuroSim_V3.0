@@ -55,6 +55,7 @@ public:
 
 	/* Functions */
 	void PrintProperty(const char* str);
+	void PrintPropertyToFile(const char* str, const char* outstr);
 	void Initialize(int _numCol, bool _currentSense, double _senseVoltage /* Unit: V */, double _pitchSenseAmp, double _clkFreq, int _numReadCellPerOperationNeuro);
 	void CalculateArea(double _newHeight, double _newWidth, AreaModify _option);
 	void CalculateLatency(double numRead);

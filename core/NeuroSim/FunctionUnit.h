@@ -46,6 +46,7 @@ public:
 
 	/* Functions */
 	virtual void PrintProperty(const char* str);
+	virtual void PrintPropertyToFile(const char* str, const char* outstr); 
 	virtual void MagicLayout();
 	virtual void OverrideLayout();
 

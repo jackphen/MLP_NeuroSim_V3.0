@@ -74,10 +74,12 @@ public:
 
 	/* Functions */
 	void PrintProperty();
+	void PrintPropertyToFile(const char* outstr);
 	void Initialize(int _numRow, int _numCol, double _unitWireRes);
 	void CalculateArea();
 	void CalculateLatency(double _rampInput);
 	void CalculatePower();
+	void PrintPropertyToFile(std::string outfile); 
 
 	/* Properties */
 	bool initialized;	// Initialization flag

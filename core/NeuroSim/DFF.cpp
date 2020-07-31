@@ -163,4 +163,7 @@ void DFF::PrintProperty(const char* str) {
 	FunctionUnit::PrintProperty(str);
 }
 
+void DFF::PrintPropertyToFile(const char* str, const char* outstr) {
+	FunctionUnit::PrintPropertyToFile(str,outstr);
+}
 

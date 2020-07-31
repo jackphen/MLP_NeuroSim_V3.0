@@ -267,3 +267,6 @@ void WLNewDecoderDriver::PrintProperty(const char* str) {
 	//cout << "Number of inverter stage: " << numStage << endl;
 }
 
+void WLNewDecoderDriver::PrintPropertyToFile(const char* str, const char* outstr) {
+	FunctionUnit::PrintPropertyToFile(str,outstr);
+}

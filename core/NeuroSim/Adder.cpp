@@ -238,4 +238,7 @@ void Adder::PrintProperty(const char* str) {
 	FunctionUnit::PrintProperty(str);
 }
 
+void Adder::PrintPropertyToFile(const char* str, const char* outstr) {
+	FunctionUnit::PrintPropertyToFile(str,outstr);
+}
 

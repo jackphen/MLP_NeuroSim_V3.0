@@ -273,3 +273,6 @@ void ReadCircuit::PrintProperty(const char* str) {
 	FunctionUnit::PrintProperty(str);
 }
 
+void ReadCircuit::PrintPropertyToFile(const char* str, const char* outstr) {
+	FunctionUnit::PrintPropertyToFile(str,outstr);
+}

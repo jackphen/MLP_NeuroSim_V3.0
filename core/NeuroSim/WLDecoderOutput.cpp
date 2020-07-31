@@ -231,3 +231,6 @@ void WLDecoderOutput::PrintProperty(const char* str) {
 	FunctionUnit::PrintProperty(str);
 }
 
+void WLDecoderOutput::PrintPropertyToFile(const char* str, const char* outstr) {
+	FunctionUnit::PrintPropertyToFile(str,outstr);
+}

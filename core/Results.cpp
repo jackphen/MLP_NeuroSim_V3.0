@@ -1,10 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015-2017
+* Copyright (c) 2020
+* Dipartimento di Elettronica, Informazione e Bioingegneria, Politecnico di Milano
+* PI: Prof. Daniele Ielmini
 * School of Electrical, Computer and Energy Engineering, Arizona State University
 * PI: Prof. Shimeng Yu
 * All rights reserved.
 *   
-* This source code is part of NeuroSim - a device-circuit-algorithm framework to benchmark 
+* This source code is part of SpikUSim - a simulator to benchmark the SpikUS 
+* architecture based on NeuroSim, a device-circuit-algorithm framework to benchmark 
 * neuro-inspired architectures with synaptic devices(e.g., SRAM and emerging non-volatile memory). 
 * Copyright of the model is maintained by the developers, and the model is distributed under 
 * the terms of the Creative Commons Attribution-NonCommercial 4.0 International Public License 
@@ -31,34 +34,47 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * 
 * Developer list: 
+*   Piergiulio Mannocci     Email: piergiulio dot mannocci at polimi dot it 
+*
 *   Pai-Yu Chen     Email: pchen72 at asu dot edu 
 *                     
 *   Xiaochen Peng   Email: xpeng15 at asu dot edu
+*                     
 ********************************************************************************/
 
 #include <string>
 #include "math.h"
 #include "Results.h"
+#include "Param.h"
 
 Results::Results() {
-    Throughput = 0;  
-	EnergyPerformance = 0; 
-	PerformanceDensity = 0; 
+	
+	MAE = INFINITY; 
+
+    throughput = 0;  
+	energyPerformance = 0; 
+	performanceDensity = 0; 
 	SWaP = 0; 
 	
-	TotalEnergy = 0; 
-	TotalCoreEnergy = 0; 
-	TotalNeuronEnergy = 0;
-	TotalCorePeripheralEnergy = 0; 
-	TotalCoreMemoryEnergy = 0; 
+	totalEnergy = 0; 
+	totalCoreEnergy = 0; 
+	totalNeuronEnergy = 0;
+	totalCorePeripheralEnergy = 0; 
+	totalCoreMemoryEnergy = 0; 
 
-	TotalLatency = 0; 
+	totalLatency = 0; 
 
-	TotalArea = 0; 
-	TotalCoreArea = 0; 
-	TotalNeuronArea = 0; 
-	TotalCorePeripheralArea = 0; 
-	TotalCoreMemoryArea = 0;
+	totalArea = 0; 
+	totalCoreArea = 0; 
+	totalNeuronArea = 0; 
+	totalCorePeripheralArea = 0; 
+	totalCoreMemoryArea = 0;
 
+	totalNeuronLeakage = 0; 
+	totalCoreLeakage = 0; 
 }
 
+/** Generates CSV file containing benchmark results. */
+void Results::GenerateCSV() {
+
+}

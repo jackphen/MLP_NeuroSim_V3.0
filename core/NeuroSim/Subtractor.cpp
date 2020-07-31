@@ -273,4 +273,8 @@ void Subtractor::PrintProperty(const char* str) {
 	FunctionUnit::PrintProperty(str);
 }
 
+void Subtractor::PrintPropertyToFile(const char* str, const char* outstr) {
+	FunctionUnit::PrintPropertyToFile(str,outstr);
+}
+
 

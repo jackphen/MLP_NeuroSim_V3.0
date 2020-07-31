@@ -219,3 +219,6 @@ void NewSwitchMatrix::PrintProperty(const char* str) {
 	FunctionUnit::PrintProperty(str);
 }
 
+void NewSwitchMatrix::PrintPropertyToFile(const char* str, const char* outstr) {
+	FunctionUnit::PrintPropertyToFile(str,outstr);
+}

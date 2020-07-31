@@ -271,3 +271,7 @@ void DecoderDriver::PrintProperty(const char* str) {
 	FunctionUnit::PrintProperty(str);
 }
 
+void DecoderDriver::PrintPropertyToFile(const char* str, const char* outstr) {
+	FunctionUnit::PrintPropertyToFile(str,outstr);
+}
+

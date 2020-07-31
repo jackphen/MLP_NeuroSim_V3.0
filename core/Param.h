@@ -56,6 +56,8 @@ class Param {
 public:
 	Param();
 	void ReadConfigFile(std::string config_file); 
+	void WriteConfigFile(std::string config_file); 
+	void LogConfig();
 
 	/* SpikUS Mapping parameters */
 	int redundancyLevel; 	// 1: single copy, 4: 4x copy of a single matrix in one array ([A1 A2; A3 A4])

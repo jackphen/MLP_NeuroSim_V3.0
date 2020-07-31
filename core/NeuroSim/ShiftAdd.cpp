@@ -190,3 +190,6 @@ void ShiftAdd::PrintProperty(const char* str) {
 	FunctionUnit::PrintProperty(str);
 }
 
+void ShiftAdd::PrintPropertyToFile(const char* str, const char* outstr) {
+	FunctionUnit::PrintPropertyToFile(str,outstr);
+}

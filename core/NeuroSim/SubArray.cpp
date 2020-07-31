@@ -1133,3 +1133,82 @@ void SubArray::PrintProperty() {
 	printf("COLUMN DELAY: %.4e\n",colDelay);
 }
 
+void SubArray::PrintPropertyToFile(std::string outfile) {
+
+	cout << endl << endl;
+	cout << "Array:" << endl;
+	cout << "Area = " << heightArray*1e6 << "um x " << widthArray*1e6 << "um = " << areaArray*1e12 << "um^2" << endl;
+	cout << "Read Dynamic Energy = " << readDynamicEnergyArray*1e12 << "pJ" << endl;
+	cout << "Write Dynamic Energy = " << writeDynamicEnergyArray*1e12 << "pJ" << endl;
+	if (cell.memCellType == Type::SRAM) {
+		wlDecoder.PrintProperty("wlDecoder");
+		precharger.PrintProperty("precharger");
+		sramWriteDriver.PrintProperty("sramWriteDriver");
+		adder.PrintProperty("adder");
+		dff.PrintProperty("dff");
+		subtractor.PrintProperty("subtractor");
+		if (shiftAddEnable) {
+			shiftAdd.PrintProperty("shiftAdd");
+		}
+	} else if (cell.memCellType == Type::RRAM) {
+		if (cell.accessType == CMOS_access) {   // 1T1R
+			if (digitalModeNeuro) {
+				wlDecoder.PrintProperty("wlDecoder");
+				colDecoder.PrintProperty("colDecoder");
+				colDecoderDriver.PrintProperty("colDecoderDriver");
+				mux.PrintProperty("mux");
+				muxDecoder.PrintProperty("muxDecoder");
+				voltageSenseAmp.PrintProperty("voltageSenseAmp");
+				adder.PrintProperty("adder");
+				dff.PrintProperty("dff");
+				subtractor.PrintProperty("subtractor");
+				if (shiftAddEnable) {
+					shiftAdd.PrintProperty("shiftAdd");
+				}
+			} else {
+				wlDecoderOutput.PrintProperty("wlDecoderOutput");
+				wlDecoder.PrintProperty("wlDecoder");
+				slSwitchMatrix.PrintProperty("slSwitchMatrix");
+				blSwitchMatrix.PrintProperty("blSwitchMatrix");
+				mux.PrintProperty("mux");
+				muxDecoder.PrintProperty("muxDecoder");
+				readCircuit.PrintProperty("readCircuit");
+				subtractor.PrintProperty("subtractor");
+				if (shiftAddEnable) {
+					shiftAdd.PrintProperty("shiftAdd");
+				}
+			}
+		} else {	// Crosspoint
+			if (digitalModeNeuro) {
+				wlDecoder.PrintProperty("wlDecoder");
+				wlDecoderDriver.PrintProperty("wlDecoderDriver");
+				colDecoder.PrintProperty("colDecoder");
+				colDecoderDriver.PrintProperty("colDecoderDriver");
+				mux.PrintProperty("mux");
+				muxDecoder.PrintProperty("muxDecoder");
+				voltageSenseAmp.PrintProperty("voltageSenseAmp");
+				adder.PrintProperty("adder");
+				dff.PrintProperty("dff");
+				subtractor.PrintProperty("subtractor");
+				if (shiftAddEnable) {
+					shiftAdd.PrintProperty("shiftAdd");
+				}
+			} else {
+				wlSwitchMatrix.PrintProperty("wlSwitchMatrix");
+				blSwitchMatrix.PrintProperty("blSwitchMatrix");
+				mux.PrintProperty("mux");
+				muxDecoder.PrintProperty("muxDecoder");
+				readCircuit.PrintProperty("readCircuit");
+				subtractor.PrintProperty("subtractor");
+				if (shiftAddEnable) {
+					shiftAdd.PrintProperty("shiftAdd");
+				}
+			}
+		}
+	}
+	FunctionUnit::PrintProperty("SubArray");
+	cout << "Used Area = " << usedArea*1e12 << "um^2" << endl;
+	cout << "Empty Area = " << emptyArea*1e12 << "um^2" << endl;
+
+	printf("COLUMN DELAY: %.4e\n",colDelay);
+}

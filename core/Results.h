@@ -7,8 +7,8 @@
 * This source code is part of NeuroSim - a device-circuit-algorithm framework to benchmark 
 * neuro-inspired architectures with synaptic devices(e.g., SRAM and emerging non-volatile memory). 
 * Copyright of the model is maintained by the developers, and the model is distributed under 
-* the terms of the Creative Commons Attribution-NonCommercial 4.0 International Public License 
-* http://creativecommons.org/licenses/by-nc/4.0/legalcode.
+* the terms of the Creative Coumons Attribution-NonCoumercial 4.0 International Public License 
+* http://creativecoumons.org/licenses/by-nc/4.0/legalcode.
 * The source code is free and you can redistribute and/or modify it
 * by providing that the following conditions are met:
 *   
@@ -43,28 +43,35 @@
 #ifndef RESULTS_H_
 #define RESULTS_H_
 
+/** Class to hold benchmark results and generate export files. */
 class Results {
 public:
 	Results();
+	void GenerateCSV();
 
-	double Throughput; 
-	double EnergyPerformance; 
-	double PerformanceDensity; 
-	double SWaP; 
+	double MAE; 				// Mean Absolute Error of the computed solution
+
+	double throughput;			// Measured throughput in FLOPS 
+	double energyPerformance; 	// Measured energy performance in FLOPS/W
+	double performanceDensity;  // Measured performance density in FLOPS/um^2
+	double SWaP; 				// Measured SWaP (Space-Wattage Performance) in FLOPS/(W um^2)
 	
-	double TotalEnergy; 
-	double TotalCoreEnergy; 
-	double TotalNeuronEnergy;
-	double TotalCorePeripheralEnergy; 
-	double TotalCoreMemoryEnergy; 
+	double totalEnergy; 		// Total measured energy of the system in J
+	double totalCoreEnergy; 	// Total measured energy of the synaptic cores in J
+	double totalNeuronEnergy;	// Total measured energy of the neurons in J
+	double totalCorePeripheralEnergy; 	// Total measured energy of synaptic cores' peripherals in J
+	double totalCoreMemoryEnergy; 		// Total measured energy of synaptic cores' memory arrays in J
 
-	double TotalLatency; 
+	double totalLatency; 		// Total latency in s
 
-	double TotalArea; 
-	double TotalCoreArea; 
-	double TotalNeuronArea; 
-	double TotalCorePeripheralArea; 
-	double TotalCoreMemoryArea; 
+	double totalArea; 			// Total occupied area in um^2
+	double totalCoreArea; 		// Total area of the synaptic cores in um^2
+	double totalNeuronArea; 	// Total area of the neurons in um^2
+	double totalCorePeripheralArea; 	// Total area of the synaptic cores' peripherals in um^2
+	double totalCoreMemoryArea; 		// Total area of the synaptic cores' memory arrays in um^2
+
+	double totalNeuronLeakage; 
+	double totalCoreLeakage; 
 };
 
 #endif

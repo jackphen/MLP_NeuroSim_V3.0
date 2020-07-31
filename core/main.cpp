@@ -55,15 +55,29 @@
 #include "Results.h"
 #include "Definition.h"
 
-using namespace std;
+/* Logger libraries */
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
-void InitSystem(); 
+using namespace std;
 
 char benchmark[200];
 
+/* Loggers */
+auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/multisink.txt", true);
+spdlog::logger logger("SpikUSim", {console_sink, file_sink});
+
 int main() {
 
-	TRACE("Started.\n"); 
+	/* Initialize loggers. */	
+    console_sink->set_level(spdlog::level::warn);
+    console_sink->set_pattern("[%^%l%$] %v");
+    file_sink->set_level(spdlog::level::trace);
+    logger.set_level(spdlog::level::debug);
+
+    logger.info("SpikUSim Started.");
 
 	/* To be moved in Results::Results() */
 	std::vector<double> heightNeurons;		// Vector of heights of neuron peripheries circutry
@@ -79,7 +93,6 @@ int main() {
 	 * 					SETUP INITIALIZATION
 	 * **********************************************************/
 
-	printf("Started\n"); 
 	param->ReadConfigFile("config.nsim"); 
 
 	/* Initialize each memory array */
@@ -132,43 +145,40 @@ int main() {
 
 		/* Initialization of NeuroSim synaptic cores */
 		NeuroSimSubArrayInitialize(subArrays[jj], arrays[jj], inputParameterIH, techIH, cellIH);
-		TRACE("\tInitialized synaptic core #%d.\n",jj);
+		logger.trace("Initialized synaptic core #%d.",jj);
 
 		/* Calculate synaptic core area */
 		/* This includes the memory array and the "reading" peripherals */
 		NeuroSimSubArrayArea(subArrays[jj]);
-		TRACE("\tCalculated area of synaptic core #%d.\n",jj);
+		logger.trace("Calculated area of synaptic core #%d.",jj);
 
 		/* Calculate synaptic core standby leakage power */
 		NeuroSimSubArrayLeakagePower(subArrays[jj]);
-		TRACE("\tCalculated leakage of synaptic core #%d.\n",jj);
+		logger.trace("\tCalculated leakage of synaptic core #%d.",jj);
 		
 		/* Initialize the neuron peripheries */
 		/* These are used for the digital post-processing and feedback operation */
 		NeuroSimNeuronInitialize(subArrays[jj], inputParameterIH, techIH, cellIH, *adders[jj], *muxs[jj], *muxDecoders[jj], *dffs[jj], *subtractors[jj]);
-		TRACE("\tInitialized peripherals of synaptic core #%d.\n",jj);
+		logger.trace("\tInitialized peripherals of synaptic core #%d.\n",jj);
 
 		/* Area of neuron peripheries */
 		heightNeurons.push_back(0); widthNeurons.push_back(0); 
 		NeuroSimNeuronArea(subArrays[jj], *adders[jj], *muxs[jj], *muxDecoders[jj], *dffs[jj], *subtractors[jj], &heightNeurons[jj], &widthNeurons[jj]);
 		totalNeuronAreas.push_back((*adders[jj]).area + (*muxs[jj]).area + (*muxDecoders[jj]).area + (*dffs[jj]).area + (*subtractors[jj]).area);
-		TRACE("\tCalculated area of perihperals of synaptic core #%d.\n",jj);
+		logger.trace("\tCalculated area of perihperals of synaptic core #%d.\n",jj);
 
 		/* Leakage of neuron peripheries */
 		leakageNeurons.push_back(NeuroSimNeuronLeakagePower(subArrays[jj], *adders[jj], *muxs[jj], *muxDecoders[jj], *dffs[jj], *subtractors[jj]));
-		TRACE("\tCalculated leakage of peripherals of synaptic core #%d.\n",jj);
-
-		TRACE("Synaptic Core #%d initialized.\n\n",jj);
+		logger.trace("\tCalculated leakage of peripherals of synaptic core #%d.\n",jj);
 	}
 
-	printf("\nInitialized all arrays.\n"); 
+	logger.info("\nInitialized all arrays.\n"); 
  
-
 	/* *********************************************************+
 	 * 						ARRAY PROGRAMMING 
 	 * **********************************************************/
 
-	printf("\nStarted array programming phase.\n");
+	logger.info("\nStarted array programming phase.\n");
 
 	for(int jj = 0; jj < param->numArrays; jj++) {
 		WeightInitialize(param->matrixFiles[jj],arrays[jj]);  
@@ -183,70 +193,29 @@ int main() {
 	/* *********************************************************+
 	 * 				       BENCHMARK RESULTS 
 	 * **********************************************************/	 
-	printf("-----------------------------------------------------------------\n");
-	printf("                           SYSTEM REPORT                         \n");
-	printf("-----------------------------------------------------------------\n");
-
-	double totalNeuronArea = 0; 
-	double totalMemoryArea = 0; 
-	double totalNeuronLeakage = 0; 
-	double totalMemoryLeakage = 0; 
-	double totalSubArrayArea = 0; 
 	for(int jj = 0; jj < param->numArrays; jj++) {
-		TRACE("-----------------------------------------------------------------\n");
-		TRACE("                           ARRAY #%d                             \n",jj);
-		TRACE("-----------------------------------------------------------------\n");
-		TRACE("\nArea, synaptic core:\t\t\t %.4e mm^2\n", (subArrays[jj]->usedArea));
-		TRACE("\t\tmemory array:\t\t\t %.4e mm^2\n", (subArrays[jj]->areaArray));
-		TRACE("\t\tperipherals:\t\t\t %.4e mm^2\n", (subArrays[jj]->usedArea-subArrays[jj]->areaArray));
-		TRACE("Area, neuron:\t\t\t %.4e mm^2\n", (totalNeuronAreas[jj])*1e6);
-		TRACE("Area, total:\t\t\t\t %.4e mm^2\n", (subArrays[jj]->areaArray + totalNeuronAreas[jj])*1e6 );
-
-		TRACE("\nLeakage power, synaptic core:\t\t %.4e W\n", subArrays[jj]->leakage);
-		TRACE("Leakage power, neuron:\t\t\t %.4e W\n", leakageNeurons[jj]);
-		TRACE("Leakage power, total:\t\t\t %.4e W\n", subArrays[jj]->leakage + leakageNeurons[jj]);
-		TRACE("-----------------------------------------------------------------\n");
-
-		totalNeuronArea += totalNeuronAreas[jj];
-		totalMemoryArea += subArrays[jj]->areaArray;
-		totalNeuronLeakage += leakageNeurons[jj];
-		totalMemoryLeakage += subArrays[jj]->leakage; 
-		totalSubArrayArea += subArrays[jj]->usedArea; 
+		results->totalNeuronArea += totalNeuronAreas[jj];
+		results->totalCoreMemoryArea += subArrays[jj]->areaArray;
+		results->totalNeuronLeakage += leakageNeurons[jj];
+		results->totalCoreLeakage += subArrays[jj]->leakage; 
+		results->totalCoreArea += subArrays[jj]->usedArea; 
+		results->totalCorePeripheralArea += (subArrays[jj]->usedArea - subArrays[jj]->areaArray);
 	}
+	results->totalArea = results->totalNeuronArea + results->totalCoreArea;
+	results->performanceDensity = results->throughput/results->totalArea; 
+	results->SWaP = results->energyPerformance / results->totalArea;
 
-	TRACE("-----------------------------------------------------------------\n");
-	TRACE("                               TOTAL                             \n");
-	TRACE("-----------------------------------------------------------------\n");
-	printf("\nArea, synaptic cores:\t\t\t %.4e mm^2\n", (totalSubArrayArea)*1e6);
-	printf("\tmemory arrays:\t\t\t\t %.4e mm^2\n", (totalMemoryArea)*1e6);
-	printf("\tperipherals:\t\t\t\t %.4e mm^2\n", (totalSubArrayArea - totalMemoryArea)*1e6);
-	printf("Area, neuron:\t\t\t\t %.4e mm^2\n", (totalNeuronArea)*1e6);
-	printf("Area, total:\t\t\t\t %.4e mm^2\n", (totalSubArrayArea + totalNeuronArea)*1e6 );
+	printf("Benchmark results:\n");
+	printf("Energy: %.4e nJ\n",results->totalEnergy/1e9);
+	printf("Latency: %.4e us\n",results->totalLatency/1e-6);
+	printf("Area: %.4e mm^2\n",results->totalArea*1e6);
+	printf("\n"); 
+	printf("Throughput: %.4e TOPS\n",results->throughput/1e12);
+	printf("Performance: %.4e TOPS/W\n",results->energyPerformance/1e12);
+	printf("Density: %.4e TOPS/mm^2\n", results->performanceDensity/(1e12)/(1e6));
+	printf("SWaP: %.4e TOPS/(W mm^2)\n",results->SWaP/(1e12*1e6)); 
 
-	printf("\nPerformance Density:\t\t\t %.4e TOPS/mm^2\n",results->Throughput/((totalSubArrayArea + totalNeuronArea)*1e6)/1e12);	
-
-	printf("\nLeakage power, synaptic cores:\t\t %.4e W\n", totalMemoryLeakage);
-	printf("Leakage power, neurons:\t\t\t %.4e W\n", totalNeuronLeakage);
-	printf("Leakage power, total:\t\t\t %.4e W\n", totalMemoryLeakage + totalNeuronLeakage);
-	printf("-----------------------------------------------------------------\n");
-
-	sprintf(benchmark,"%s%.4e,",benchmark,totalMemoryArea); 
-	sprintf(benchmark,"%s%.4e,",benchmark,totalNeuronArea); 
-	sprintf(benchmark,"%s%.4e,",benchmark,totalMemoryArea+totalNeuronArea); 
-	sprintf(benchmark,"%s%.4e,",benchmark,totalMemoryLeakage); 
-	sprintf(benchmark,"%s%.4e,",benchmark,totalNeuronLeakage); 
-	sprintf(benchmark,"%s%.4e];\n",benchmark,totalMemoryLeakage+totalNeuronLeakage); 
-
-	printf("\n\n%s",benchmark);
-	TRACE("\nCompleted!\n");
-
-	results->PerformanceDensity = results->Throughput/(totalSubArrayArea + totalNeuronArea);
-	results->TotalArea = totalSubArrayArea + totalNeuronArea;
-	results->TotalCoreArea = totalSubArrayArea; 
-	results->TotalCoreMemoryArea = totalMemoryArea; 
-	results->TotalCorePeripheralArea = totalSubArrayArea - totalMemoryArea; 
-
-
+	logger.warn("Completed! SpikUSim will now exit.");
 
 	for (int jj = 0; jj < param->numArrays; jj++) {
 		(*subArrays[jj]).PrintProperty(); 
@@ -254,3 +223,64 @@ int main() {
 
 	return 0;
 }
+
+// TRACE("-----------------------------------------------------------------\n");
+// TRACE("                           ARRAY #%d                             \n",jj);
+// TRACE("-----------------------------------------------------------------\n");
+// TRACE("\nArea, synaptic core:\t\t\t %.4e mm^2\n", (subArrays[jj]->usedArea));
+// TRACE("\t\tmemory array:\t\t\t %.4e mm^2\n", (subArrays[jj]->areaArray));
+// TRACE("\t\tperipherals:\t\t\t %.4e mm^2\n", (subArrays[jj]->usedArea-subArrays[jj]->areaArray));
+// TRACE("Area, neuron:\t\t\t %.4e mm^2\n", (totalNeuronAreas[jj])*1e6);
+// TRACE("Area, total:\t\t\t\t %.4e mm^2\n", (subArrays[jj]->areaArray + totalNeuronAreas[jj])*1e6 );
+
+// TRACE("\nLeakage power, synaptic core:\t\t %.4e W\n", subArrays[jj]->leakage);
+// TRACE("Leakage power, neuron:\t\t\t %.4e W\n", leakageNeurons[jj]);
+// TRACE("Leakage power, total:\t\t\t %.4e W\n", subArrays[jj]->leakage + leakageNeurons[jj]);
+// TRACE("-----------------------------------------------------------------\n");
+
+
+	// printf("-----------------------------------------------------------------\n");
+	// printf("                           SYSTEM REPORT                         \n");
+	// printf("-----------------------------------------------------------------\n");
+
+	// TRACE("-----------------------------------------------------------------\n");
+	// TRACE("                               TOTAL                             \n");
+	// TRACE("-----------------------------------------------------------------\n");
+	// printf("\nArea, synaptic cores:\t\t\t %.4e mm^2\n", (totalSubArrayArea)*1e6);
+	// printf("\tmemory arrays:\t\t\t\t %.4e mm^2\n", (totalMemoryArea)*1e6);
+	// printf("\tperipherals:\t\t\t\t %.4e mm^2\n", (totalSubArrayArea - totalMemoryArea)*1e6);
+	// printf("Area, neuron:\t\t\t\t %.4e mm^2\n", (totalNeuronArea)*1e6);
+	// printf("Area, total:\t\t\t\t %.4e mm^2\n", (totalSubArrayArea + totalNeuronArea)*1e6 );
+
+	// printf("\nPerformance Density:\t\t\t %.4e TOPS/mm^2\n",results->Throughput/((totalSubArrayArea + totalNeuronArea)*1e6)/1e12);	
+
+	// printf("\nLeakage power, synaptic cores:\t\t %.4e W\n", totalMemoryLeakage);
+	// printf("Leakage power, neurons:\t\t\t %.4e W\n", totalNeuronLeakage);
+	// printf("Leakage power, total:\t\t\t %.4e W\n", totalMemoryLeakage + totalNeuronLeakage);
+	// printf("-----------------------------------------------------------------\n");
+
+// (totalSubArrayArea + totalNeuronArea);
+// 	results->totalArea = totalSubArrayArea + totalNeuronArea;
+// 	results->totalCoreArea = totalSubArrayArea; 
+// 	results->totalCoreMemoryArea = totalMemoryArea; 
+// 	results->totalCorePeripheralArea = totalSubArrayArea - totalMemoryArea; 
+
+// TRACE("-----------------------------------------------------------------\n");
+// 	TRACE("|                              TOTAL                            |\n");
+// 	TRACE("-----------------------------------------------------------------\n");
+// 	printf("Mean Absolute Error (MAE): \t\t %.4e\n",MAE);
+// 	printf("\nSolution time: \t\t\t\t %.4e us\n",worstLatency/1e-6);
+
+// 	printf("\nComputational performance: \t\t %.4e TOPS\n",pow(param->problemSize,2)*param->numCycles/(worstLatency)/1e12);		
+	
+// 	printf("\nSolution energy, synaptic cores: \t %.4e pJ\n",totalCoreEnergy/1e-12);
+// 	printf("\t\tmemory array: \t\t\t %.4e pJ\n",totalMemoryEnergy/1e-12);
+// 	printf("\t\tperipherals: \t\t\t %.4e pJ\n",(totalCoreEnergy-totalMemoryEnergy)/1e-12);
+// 	printf("Solution energy, neurons: \t\t %.4e pJ\n",totalNeuronEnergy/1e-12);
+
+// 	printf("Solution energy, total: \t\t %.4e pJ\n",(totalNeuronEnergy+totalCoreEnergy)/1e-12);
+
+// 	printf("\nEnergy Performance: \t\t\t %.4e TOPS/W\n",pow(param->problemSize,2)*param->numCycles/(totalNeuronEnergy+totalCoreEnergy)/(1e12));	
+
+// 	printf("-----------------------------------------------------------------\n");
+// 	printf("-----------------------------------------------------------------\n");
