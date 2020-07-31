@@ -77,6 +77,7 @@ public:
 	std::string targetFile; 
 	std::string solutionFile; 
 	std::string experimentName; 
+	std::string outputFile; 
 
 	double throughput; 
 	double pdensity; 

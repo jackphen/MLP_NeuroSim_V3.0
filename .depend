@@ -206,7 +206,26 @@ RowDecoder.o: core/NeuroSim/RowDecoder.cpp core/NeuroSim/constant.h \
   core/NeuroSim/formula.h core/NeuroSim/Technology.h \
   core/NeuroSim/typedef.h core/NeuroSim/RowDecoder.h \
   core/NeuroSim/InputParameter.h core/NeuroSim/MemCell.h \
-  core/NeuroSim/FunctionUnit.h
+  core/NeuroSim/FunctionUnit.h core/spdlog/spdlog.h core/spdlog/common.h \
+  core/spdlog/tweakme.h core/spdlog/details/null_mutex.h \
+  core/spdlog/fmt/fmt.h core/spdlog/fmt/bundled/core.h \
+  core/spdlog/fmt/bundled/format.h core/spdlog/fmt/bundled/format-inl.h \
+  core/spdlog/common-inl.h core/spdlog/details/registry.h \
+  core/spdlog/cfg/log_levels.h core/spdlog/details/registry-inl.h \
+  core/spdlog/details/periodic_worker.h \
+  core/spdlog/details/periodic_worker-inl.h core/spdlog/logger.h \
+  core/spdlog/details/log_msg.h core/spdlog/details/log_msg-inl.h \
+  core/spdlog/details/os.h core/spdlog/details/os-inl.h \
+  core/spdlog/details/backtracer.h core/spdlog/details/log_msg_buffer.h \
+  core/spdlog/details/log_msg_buffer-inl.h \
+  core/spdlog/details/circular_q.h core/spdlog/details/backtracer-inl.h \
+  core/spdlog/logger-inl.h core/spdlog/sinks/sink.h \
+  core/spdlog/formatter.h core/spdlog/sinks/sink-inl.h \
+  core/spdlog/pattern_formatter.h core/spdlog/pattern_formatter-inl.h \
+  core/spdlog/details/fmt_helper.h core/spdlog/sinks/ansicolor_sink.h \
+  core/spdlog/details/console_globals.h \
+  core/spdlog/sinks/ansicolor_sink-inl.h core/spdlog/version.h \
+  core/spdlog/details/synchronous_factory.h core/spdlog/spdlog-inl.h
 SRAMWriteDriver.o: core/NeuroSim/SRAMWriteDriver.cpp \
   core/NeuroSim/constant.h core/NeuroSim/formula.h \
   core/NeuroSim/Technology.h core/NeuroSim/typedef.h \

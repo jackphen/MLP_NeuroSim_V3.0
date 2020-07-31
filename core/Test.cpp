@@ -393,29 +393,7 @@ void PowerIt_Full() {
 		results->totalCoreEnergy += (sumArrayReadEnergy[ii] + sumSubArrayReadEnergy[ii]);
 		results->totalNeuronEnergy += sumNeuroSimReadEnergy[ii];	
 	}
-
 	results->totalEnergy = results->totalCoreEnergy + results->totalNeuronEnergy; 
-	results->throughput = pow(param->problemSize,2)*param->numCycles/results->totalLatency;
-	results->energyPerformance = pow(param->problemSize,2)*param->numCycles/(results->totalEnergy);
-
+	
 	return; 
 }
-
-	// sprintf(benchmark,"%s%.4e,",benchmark,worstLatency); 
-	// sprintf(benchmark,"%s%.4e,",benchmark,totalMemoryEnergy); 
-	// sprintf(benchmark,"%s%.4e,",benchmark,totalNeuronEnergy); 
-	// sprintf(benchmark,"%s%.4e,",benchmark,totalMemoryEnergy+totalNeuronEnergy); 
-// printf("-----------------------------------------------------------------\n");
-// 	printf("                         SOLUTION REPORT                         \n");
-// 	printf("-----------------------------------------------------------------\n");
-// 	printf("Neuron latency: %.4e",NeuroSimNeuronReadLatency(subArrays[0], *adders[0], *muxs[0], *muxDecoders[0], *dffs[0], *subtractors[0]));
-// TRACE("-----------------------------------------------------------------\n");
-// 		TRACE("                           ARRAY #%d                             \n",ii);
-// 		TRACE("-----------------------------------------------------------------\n");
-
-// 		TRACE("\nComputation latency, total: \t\t %.4e us\n",sumReadLatency[ii]/1e-6);	
-// 		TRACE("\nComputation energy, memory array: \t %.4e pJ\n",sumArrayReadEnergy[ii]/1e-12);	
-// 		TRACE("Computation energy, peripherals: \t %.4e pJ\n",sumNeuroSimReadEnergy[ii]/1e-12);	
-// 		TRACE("Computation energy, total: \t\t %.4e pJ\n",(sumArrayReadEnergy[ii] + sumNeuroSimReadEnergy[ii])/1e-12);	
-
-// 		TRACE("-----------------------------------------------------------------\n");

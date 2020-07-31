@@ -47,6 +47,8 @@
 #include "Results.h"
 #include "Param.h"
 
+extern Param* param; 
+
 Results::Results() {
 	
 	MAE = INFINITY; 
@@ -72,9 +74,60 @@ Results::Results() {
 
 	totalNeuronLeakage = 0; 
 	totalCoreLeakage = 0; 
+	totalFlops = 0; 
 }
 
-/** Generates CSV file containing benchmark results. */
+/** Compute benchmarks for the currently stored 
+ * values of energy, latency and area. 
+ * */
+void Results::Benchmark() {
+	totalFlops = pow(param->problemSize,2)*param->numCycles;
+	throughput = totalFlops/totalLatency;
+	energyPerformance = totalFlops/totalEnergy;
+	performanceDensity = throughput/totalArea; 
+	SWaP = energyPerformance/totalArea;
+}
+
+/** Generate CSV file containing benchmark results. */
 void Results::GenerateCSV() {
 
+}
+
+/** Print benchmark results to the console. 
+ * */
+void Results::PrintResults() {
+
+	std::cout << "Benchmark results:" << std::endl; 
+	std::cout << "MAE: " << MAE << std::endl; 
+	std::cout << "Energy: " << totalEnergy/1e-9 << " nJ" << std::endl; 
+	std::cout << "Latency: " << totalLatency/1e-6 << " us" << std::endl; 
+	std::cout << "Area: " << totalArea*1e6 << " mm^2" << std::endl; 
+	std::cout << std::endl; 
+	std::cout << "Throughput: " << throughput/1e9 << " GOPS" << std::endl; 
+	std::cout << "Performance: " << energyPerformance/1e12 << " TOPS/W" << std::endl; 
+	std::cout << "Density: " << performanceDensity/(1e12*1e6) << " TOPS/mm^2" << std::endl; 
+	std::cout << "SWaP: " << SWaP/(1e12*1e6) << " TOPS/(W mm^2)" << std::endl; 
+
+	return; 
+}
+
+/** Print benchmark results to an output file. 
+ * @param outstr 	(const char*) the output file.
+ * */
+void Results::PrintResultsToFile(const char* outstr) {
+	std::ofstream outfile(outstr);
+
+	outfile << "Benchmark results:" << std::endl; 
+	outfile << "MAE: " << MAE << std::endl; 
+	outfile << "Energy: " << totalEnergy/1e-9 << " nJ" << std::endl; 
+	outfile << "Latency: " << totalLatency/1e-6 << " us" << std::endl; 
+	outfile << "Area: " << totalArea*1e6 << " mm^2" << std::endl; 
+	outfile << std::endl; 
+	outfile << "Throughput: " << throughput/1e9 << " GOPS" << std::endl; 
+	outfile << "Performance: " << energyPerformance/1e12 << " TOPS/W" << std::endl; 
+	outfile << "Density: " << performanceDensity/(1e12*1e6) << " TOPS/mm^2" << std::endl; 
+	outfile << "SWaP: " << SWaP/(1e12*1e6) << " TOPS/(W mm^2)" << std::endl; 
+
+	outfile.close(); 
+	return; 
 }

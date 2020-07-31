@@ -1,0 +1,115 @@
+Benchmark results:
+Energy: 3.25961 nJ
+Latency: 1.11913 us
+Area: 0.0147347 mm^2
+
+Throughput: 0.00548998 TOPS
+Performance: 1.88489 TOPS/W
+Density: 0.37259 TOPS/mm^2
+SWaP: 127.922 TOPS/(W mm^2)
+
+
+Synaptic Core #0:
+Array:
+Area = 14.9504um x 61.44um = 918.553um^2
+Read Dynamic Energy = 0pJ
+Write Dynamic Energy = 0pJ
+---------------------------------------------------------
+wlDecoder
+Area = 14.9504um x 3.4496um = 51.5729um^2
+Timing:
+ - Read Latency = 15.879ns
+ - Write Latency = 0.0992436ns
+Power:
+ - Read Dynamic Energy = 1.61767pJ
+ - Write Dynamic Energy = 0.0101104pJ
+ - Leakage Power = 1.65213uW
+ - Read Power = 101.875uW
+ - Write Power = 101.875uW
+---------------------------------------------------------
+precharger
+Area = 2.688um x 61.44um = 165.151um^2
+Timing:
+ - Read Latency = 3.17373ns
+ - Write Latency = 0.0198358ns
+Power:
+ - Read Dynamic Energy = 225.725pJ
+ - Write Dynamic Energy = 0.352696pJ
+ - Leakage Power = 1.69189uW
+ - Read Power = 0uW
+ - Write Power = 0uW
+---------------------------------------------------------
+sramWriteDriver
+Area = 2.688um x 61.44um = 165.151um^2
+Timing:
+ - Read Latency = 0ns
+ - Write Latency = 0ns
+Power:
+ - Read Dynamic Energy = 0pJ
+ - Write Dynamic Energy = 0.0186905pJ
+ - Leakage Power = 3.65258uW
+ - Read Power = 0uW
+ - Write Power = 0uW
+---------------------------------------------------------
+adder
+Area = 19.712um x 61.44um = 1211.11um^2
+Timing:
+ - Read Latency = 43.2725ns
+ - Write Latency = 0ns
+Power:
+ - Read Dynamic Energy = 162.901pJ
+ - Write Dynamic Energy = 0pJ
+ - Leakage Power = 20.6488uW
+ - Read Power = 0uW
+ - Write Power = 0uW
+---------------------------------------------------------
+dff
+Area = 17.024um x 61.44um = 1045.95um^2
+Timing:
+ - Read Latency = 40ns
+ - Write Latency = 0ns
+Power:
+ - Read Dynamic Energy = 106.938pJ
+ - Write Dynamic Energy = 0pJ
+ - Leakage Power = 19.4804uW
+ - Read Power = 0uW
+ - Write Power = 0uW
+---------------------------------------------------------
+subtractor
+Area = 29.568um x 61.44um = 1816.66um^2
+Timing:
+ - Read Latency = 5.98273ns
+ - Write Latency = 0ns
+Power:
+ - Read Dynamic Energy = 25.4876pJ
+ - Write Dynamic Energy = 0pJ
+ - Leakage Power = 29.1166uW
+ - Read Power = 0uW
+ - Write Power = 0uW
+---------------------------------------------------------
+shiftAdd
+Area = 50.176um x 61.44um = 3082.81um^2
+Timing:
+ - Read Latency = 4.36173ns
+ - Write Latency = 0ns
+Power:
+ - Read Dynamic Energy = 17.7935pJ
+ - Write Dynamic Energy = 0pJ
+ - Leakage Power = 54.9934uW
+ - Read Power = 4079.46uW
+ - Write Power = 0uW
+---------------------------------------------------------
+SubArray
+Area = 138.63um x 64.8896um = 8995.67um^2
+Timing:
+ - Read Latency = 0ns
+ - Write Latency = 0ns
+Power:
+ - Read Dynamic Energy = 0pJ
+ - Write Dynamic Energy = 0pJ
+ - Leakage Power = 192.362uW
+ - Read Power = 0uW
+ - Write Power = 0uW
+Used Area = 8569.02um^2
+Empty Area = 426.647um^2
+Column delay = 3.71821ns

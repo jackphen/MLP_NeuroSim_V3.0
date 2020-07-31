@@ -47,9 +47,13 @@
 class Results {
 public:
 	Results();
+	void Benchmark(); 
 	void GenerateCSV();
+	void PrintResults(); 
+	void PrintResultsToFile(const char* outstr);
 
 	double MAE; 				// Mean Absolute Error of the computed solution
+	double totalFlops; 			// Total number of floating-point operations
 
 	double throughput;			// Measured throughput in FLOPS 
 	double energyPerformance; 	// Measured energy performance in FLOPS/W

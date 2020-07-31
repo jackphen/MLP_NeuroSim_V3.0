@@ -79,7 +79,6 @@ public:
 	void CalculateArea();
 	void CalculateLatency(double _rampInput);
 	void CalculatePower();
-	void PrintPropertyToFile(std::string outfile); 
 
 	/* Properties */
 	bool initialized;	// Initialization flag

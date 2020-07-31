@@ -42,6 +42,7 @@
 #include "Debug.h"
 #include "Param.h"
 
+/* Logger libraries */
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
@@ -69,6 +70,7 @@ Param::Param() {
 	targetFile; 
 	solutionFile; 
 	experimentName;
+	outputFile; 
 
 	/* Hardware parameters */
 	arrayWriteType = true; 			  // Ideal or real write for matrix weights (true: real, false: ideal); 	c hardware, false: ideal software)
@@ -95,8 +97,7 @@ void Param::ReadConfigFile(std::string config_file) {
 
 	if (config.is_open()) {
 
-		std::cout << "Configuration file found!\n";
-		logger.warn("Configuration file found!");
+		logger.info("Configuration file found!");
 
 		while (!config.eof()) {
 
@@ -196,6 +197,10 @@ void Param::ReadConfigFile(std::string config_file) {
 
 		if (save == 'y') WriteConfigFile("config.nsim"); 
 	}
+
+	/* Output file */
+	outputFile = "experiments/" + experimentName + "/breakdown.txt";
+
 	return;
 }
 
@@ -218,6 +223,7 @@ void Param::LogConfig() {
 		logger.info("matrixGains[{}]: {}",jj,matrixGains[jj]);
 	}
 	logger.info("solutionFile: {}",solutionFile);
+	logger.info("outputFile: {}",outputFile);
 	logger.info("arrayWriteType: {}",arrayWriteType);
 	logger.info("numColMuxed: {}",numColMuxed);
 	logger.info("IPIThreshold: {}",IPIThreshold);

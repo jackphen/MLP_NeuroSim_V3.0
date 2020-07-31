@@ -42,6 +42,10 @@
 #include "formula.h"
 #include "RowDecoder.h"
 
+/* Logger libraries */
+#include "spdlog/spdlog.h"
+extern spdlog::logger logger; 
+
 using namespace std;
 
 RowDecoder::RowDecoder(const InputParameter& _inputParameter, const Technology& _tech, const MemCell& _cell): inputParameter(_inputParameter), tech(_tech), cell(_cell), FunctionUnit(){
@@ -50,7 +54,7 @@ RowDecoder::RowDecoder(const InputParameter& _inputParameter, const Technology& 
 
 void RowDecoder::Initialize(DecoderMode _mode, int _numAddrRow, bool _MUX) {
 	if (initialized)
-		cout << "[Row Decoder] Warning: Already initialized!" << endl;
+		logger.error("[Row Decoder] Warning: Already initialized!");
 	
 	mode = _mode;
 	numAddrRow = _numAddrRow;
@@ -333,7 +337,7 @@ void RowDecoder::CalculateLatency(double _rampInput, double _capLoad1, double _c
 
 void RowDecoder::CalculatePower(double numRead, double numWrite) {
 	if (!initialized) {
-		cout << "[Row Decoder] Error: Require initialization first!" << endl;
+		logger.error("[Row Decoder] Error: Require initialization first!");
 	} else {
 		leakage = 0;
 		readDynamicEnergy = 0;
