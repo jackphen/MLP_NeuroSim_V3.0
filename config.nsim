@@ -1,5 +1,5 @@
 experimentName=IEDM2020_OHM
-arrayType=1
+arrayType=3
 problemSize=32
 redundancyLevel=1
 numArrays=1
@@ -10,3 +10,4 @@ arrayWriteType=0
 numColMuxed=1
 IPIThreshold=7.1642
 numCycles=6
+adaptBenchmark=E:m*12|A:m*12

@@ -71,6 +71,7 @@ Param::Param() {
 	solutionFile; 
 	experimentName;
 	outputFile; 
+	adaptBenchmark = ""; 
 
 	/* Hardware parameters */
 	arrayWriteType = true; 			  // Ideal or real write for matrix weights (true: real, false: ideal); 	c hardware, false: ideal software)
@@ -102,6 +103,9 @@ void Param::ReadConfigFile(std::string config_file) {
 		while (!config.eof()) {
 
 			getline(config,row); 
+
+			if (row.at(0) == '#') continue; 
+
 			auto rown = explode(row,'=');
 
 			if (rown[0].compare("experimentName") == 0) {
@@ -148,6 +152,9 @@ void Param::ReadConfigFile(std::string config_file) {
 			}
 			else if (rown[0].compare("numBitInput") == 0) {
 				numBitInput = stoi(rown[1]);
+			}
+			else if (rown[0].compare("adaptBenchmark") == 0) {
+				adaptBenchmark = rown[1];
 			}
 		}
 
@@ -229,4 +236,5 @@ void Param::LogConfig() {
 	logger.info("IPIThreshold: {}",IPIThreshold);
 	logger.info("numCycles: {}",numCycles);
 	logger.info("numBitInput: {}",numBitInput);
+	logger.info("adaptBenchmark: {}",adaptBenchmark);
 }

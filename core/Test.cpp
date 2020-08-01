@@ -339,10 +339,13 @@ void PowerIt_Full() {
 
 		// Mean absolute error: results->MAE = sum(|x-x_hat|)/N
 		results->MAE = 0; 
+		results->MRE = 0; 
 		for (int j = 0; j < param->problemSize; j++) {
 			results->MAE += abs(Output[j] - EvExact[j]);
+			results->MRE += abs(Output[j] - EvExact[j]) / abs(EvExact[j]);
 		}
 		results->MAE = results->MAE / param->problemSize;
+		results->MRE = results->MRE / param->problemSize; 
 
 		// Energy report
 		for (int ii = 0; ii < param->numArrays; ii++) {

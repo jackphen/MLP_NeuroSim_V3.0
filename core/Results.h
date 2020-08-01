@@ -43,6 +43,9 @@
 #ifndef RESULTS_H_
 #define RESULTS_H_
 
+enum class Category : char {ENERGY = 'E', LATENCY = 'L', AREA = 'A'};
+enum class Element : char {MEMORY = 'm', PERIPHERALS = 'p', NEURONS = 'n', SYSTEM = 's'};
+
 /** Class to hold benchmark results and generate export files. */
 class Results {
 public:
@@ -51,8 +54,10 @@ public:
 	void GenerateCSV();
 	void PrintResults(); 
 	void PrintResultsToFile(const char* outstr);
+	double GetAdapter(Category category, Element element);
 
 	double MAE; 				// Mean Absolute Error of the computed solution
+	double MRE;					// Mean Relative Error of the computed solution
 	double totalFlops; 			// Total number of floating-point operations
 
 	double throughput;			// Measured throughput in FLOPS 
@@ -76,6 +81,9 @@ public:
 
 	double totalNeuronLeakage; 
 	double totalCoreLeakage; 
+
+	std::string adaptBenchmark; 
 };
+
 
 #endif

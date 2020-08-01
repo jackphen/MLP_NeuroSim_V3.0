@@ -1,13 +1,24 @@
 Benchmark results:
-MAE: 0.0198825
-Energy: 0.981805 nJ
-Latency: 0.0960165 us
-Area: 0.0111617 mm^2
+MAE: 0.0262039
+MRE: 0.0423829
+Energy: 1.24581 nJ
+Latency: 0.715503 us
+Area: 0.0118101 mm^2
 
-Throughput: 63.989 GOPS
-Performance: 6.25786 TOPS/W
-Density: 5.73293 TOPS/mm^2
-SWaP: 560.657 TOPS/(W mm^2)
+Throughput: 8.58697 GOPS
+Performance: 4.93174 TOPS/W
+Density: 0.727086 TOPS/mm^2
+SWaP: 417.586 TOPS/(W mm^2)
+
+
+Coarse breakdown:
+Memory energy: 0.295436 nJ
+Peripherals energy: 0.87979 nJ
+Neuron energy: 0.0705818 nJ
+
+Memory area: 0.000765041 mm^2
+Peripherals area: 0.00564795 mm^2
+Neuron area: 0.00539713 mm^2
 
 
 Synaptic Core #0:
@@ -41,36 +52,36 @@ Power:
  - Write Power = 186.187uW
 ---------------------------------------------------------
 slSwitchMatrix
-Area = 6.61462um x 15.5648um = 102.955um^2
+Area = 6.49928um x 15.5648um = 101.16um^2
 Timing:
  - Read Latency = 0ns
  - Write Latency = 0ns
 Power:
  - Read Dynamic Energy = 0.0556967pJ
- - Write Dynamic Energy = 0.445651pJ
+ - Write Dynamic Energy = 0.643569pJ
  - Leakage Power = 1.62337uW
  - Read Power = 0uW
  - Write Power = 0uW
 ---------------------------------------------------------
 blSwitchMatrix
-Area = 4.096um x 35.0208um = 143.445um^2
+Area = 4.096um x 27.2384um = 111.568um^2
 Timing:
- - Read Latency = 2.01135ns
- - Write Latency = 12ns
+ - Read Latency = 9.50707ns
+ - Write Latency = 300002ns
 Power:
- - Read Dynamic Energy = 0.799862pJ
- - Write Dynamic Energy = 0.451099pJ
+ - Read Dynamic Energy = 0.452742pJ
+ - Write Dynamic Energy = 0.445577pJ
  - Leakage Power = 1.62337uW
- - Read Power = 397.674uW
- - Write Power = 37.5916uW
+ - Read Power = 47.6217uW
+ - Write Power = 0.00148525uW
 ---------------------------------------------------------
 mux
-Area = 1.45832um x 15.5648um = 22.6984um^2
+Area = 0.228072um x 15.5648um = 3.54989um^2
 Timing:
  - Read Latency = 0ns
  - Write Latency = 0ns
 Power:
- - Read Dynamic Energy = 0.707267pJ
+ - Read Dynamic Energy = 0.000500749pJ
  - Write Dynamic Energy = 0pJ
  - Leakage Power = 0uW
  - Read Power = 0uW
@@ -115,17 +126,17 @@ Power:
 shiftAdd
 Area = 176.512um x 15.5648um = 2747.37um^2
 Timing:
- - Read Latency = 3.95647ns
+ - Read Latency = 0.49569ns
  - Write Latency = 0ns
 Power:
  - Read Dynamic Energy = 15.4284pJ
  - Write Dynamic Energy = 0pJ
  - Leakage Power = 47.9923uW
- - Read Power = 3899.55uW
+ - Read Power = 31125.2uW
  - Write Power = 0uW
 ---------------------------------------------------------
 SubArray
-Area = 356.233um x 69.2352um = 24663.9um^2
+Area = 354.887um x 61.4528um = 21808.8um^2
 Timing:
  - Read Latency = 0ns
  - Write Latency = 0ns
@@ -135,6 +146,6 @@ Power:
  - Leakage Power = 99.908uW
  - Read Power = 0uW
  - Write Power = 0uW
-Used Area = 5764.53um^2
-Empty Area = 18899.3um^2
-Column delay = 0.202128ns
+Used Area = 5711.71um^2
+Empty Area = 16097.1um^2
+Column delay = 99.4149ns

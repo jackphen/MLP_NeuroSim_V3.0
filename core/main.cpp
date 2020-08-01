@@ -72,7 +72,7 @@ spdlog::logger logger("SpikUSim", {console_sink, file_sink});
 int main() {
 
 	/* Initialize loggers. */	
-    console_sink->set_level(spdlog::level::warn);
+    console_sink->set_level(spdlog::level::debug);
     console_sink->set_pattern("[%^%l%$] %v");
     file_sink->set_level(spdlog::level::trace);
     logger.set_level(spdlog::level::debug);
@@ -204,21 +204,9 @@ int main() {
 	/* *********************************************************+
 	 * 				       BENCHMARK RESULTS  
 	 * **********************************************************/	 
+	
 	results->Benchmark(); 
-
-	printf("Benchmark results:\n");
-	printf("Energy: %.4e nJ\n",results->totalEnergy/1e-9);
-	printf("Latency: %.4e us\n",results->totalLatency/1e-6);
-	printf("Area: %.4e mm^2\n",results->totalArea*1e6);
-	printf("\n"); 
-	printf("Throughput: %.4e TOPS\n",results->throughput/1e12);
-	printf("Performance: %.4e TOPS/W\n",results->energyPerformance/1e12);
-	printf("Density: %.4e TOPS/mm^2\n", results->performanceDensity/(1e12)/(1e6));
-	printf("SWaP: %.4e TOPS/(W mm^2)\n",results->SWaP/(1e12*1e6)); 
-
-	logger.warn("Completed! SpikUSim will now exit.");
-
-
+	results->PrintResults(); 
 	results->PrintResultsToFile(param->outputFile.c_str()); 
 
 	std::ofstream outfile(param->outputFile.c_str(),std::ios_base::app);
@@ -228,6 +216,8 @@ int main() {
 		outfile << "Synaptic Core #" << jj << ":" << std::endl; 
 		(*subArrays[jj]).PrintPropertyToFile(param->outputFile.c_str()); 
 	}
+
+	logger.warn("Completed! SpikUSim will now exit.");
 
 	return 0;
 }

@@ -78,6 +78,7 @@ public:
 	std::string solutionFile; 
 	std::string experimentName; 
 	std::string outputFile; 
+	std::string adaptBenchmark; 
 
 	double throughput; 
 	double pdensity; 
